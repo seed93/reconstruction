@@ -76,24 +76,24 @@ void CStereoMatching::MatchOneLayer(cv::Mat disparity[], int Pyrm_depth)
 	UniquenessContraint<short>(disparity);
 //m_data->SaveMat(disparity[0], "disparity3.dat");
 //m_data->SaveMat(disparity[1], "disparity31.dat");
-	MedianFilter(disparity[0], mask[0], 1, true);
-	MedianFilter(disparity[1], mask[1], 1, false);
+// 	MedianFilter(disparity[0], mask[0], 1, true);
+// 	MedianFilter(disparity[1], mask[1], 1, false);
 	Rematch(image, mask, disparity[0], true);
 	Rematch(image_inv, mask_inv, disparity[1], false);
 // 	SmoothConstraint(disparity[0], true);
 // 	SmoothConstraint(disparity[1], false);
 // 	OrderConstraint(disparity[0], true);
 // 	OrderConstraint(disparity[1], false);
-	
+	UniquenessContraint<short>(disparity);
 //m_data->SaveMat(disparity[0], "disparity4.dat");
 //m_data->SaveMat(disparity[1], "disparity41.dat");
 	MedianFilter(disparity[0], mask[0], 1, true);
 	MedianFilter(disparity[1], mask[1], 1, false);
-	UniquenessContraint<short>(disparity);
+	
 //  m_data->SaveMat(disparity[0], "disparity50.dat");
 //  m_data->SaveMat(disparity[1], "disparity51.dat");
 // 	DisparityToCloud<short>(disparity[0], mask[0], Q, Pyrm_depth, true, 11+10*Pyrm_depth);
-	int iteration = 50+Pyrm_depth*100;
+	int iteration = 40+Pyrm_depth*20;
 //	clock_t part = clock();
 	DisparityRefine(disparity[0], image, iteration, true);
 	DisparityRefine(disparity[1], image_inv, iteration, false);
@@ -507,7 +507,7 @@ void CStereoMatching::Rematch(cv::Mat image[], cv::Mat mask[], cv::Mat disparity
 	int vec_size = square_(window_size)*3;
 
 	cv::Mat BL, BR;
-	SetBoundary_smooth<short>(disparity, mask[0], BL, BR, IsZeroOne);
+	SetBoundary<short>(disparity, mask[0], BL, BR, IsZeroOne);
 //	m_data->SaveMat(BL,"bl.dat");
 #pragma omp parallel for
 	for (int y=YL; y<=YR; y++)
@@ -722,7 +722,6 @@ void CStereoMatching::DisparityToCloud(cv::Mat disparity, cv::Mat mask_org, cv::
 	fprintf(fp, "property float x\nproperty float y\nproperty float z\nproperty uchar blue\nproperty uchar green\nproperty uchar red\n");//
 	fprintf(fp, "end_header\n");
 #endif
-	bool flag = false;
 	for( int y = YL; y <= YR; y++ )
 	{
 		T *sptr = disparity.ptr<T>(y);
@@ -741,12 +740,6 @@ void CStereoMatching::DisparityToCloud(cv::Mat disparity, cv::Mat mask_org, cv::
 			_Fout[1][0] = qy*iW;
 			_Fout[2][0] = qz*iW;
 			cv::Mat point = R_final*Fout+T_final;
-			if (!flag)
-			{
-				printf("%d %d\n",x,y);
-				flag = true;
-			}
-			
 #ifdef IS_PCL
 			m_CloudOptimization->InsertPoint(point);
 #endif
@@ -759,7 +752,6 @@ void CStereoMatching::DisparityToCloud(cv::Mat disparity, cv::Mat mask_org, cv::
 #endif
 		}
 	}
-	cout<<endl;
 #ifdef IS_PLY
 	fclose(fp);
 #endif

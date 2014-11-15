@@ -15,18 +15,15 @@
     </Filter>
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="CCloudOptimization.h">
+    <ClInclude Include="..\reconstruction\CManageData.h">
       <Filter>头文件</Filter>
     </ClInclude>
-    <ClInclude Include="..\reconstruction\CManageData.h">
+    <ClInclude Include="CCloudOptimization.h">
       <Filter>头文件</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="CCloudOptimization.cpp">
-      <Filter>源文件</Filter>
-    </ClCompile>
-    <ClCompile Include="..\reconstruction\CManageData.cpp">
       <Filter>源文件</Filter>
     </ClCompile>
   </ItemGroup>

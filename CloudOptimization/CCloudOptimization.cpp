@@ -1,12 +1,34 @@
 #include "CCloudOptimization.h"
 
+#define MAX_CAM_NUM 10
+
+pcl::PointCloud<pcl::PointXYZ>::Ptr cloud(new pcl::PointCloud<pcl::PointXYZ>);
+pcl::PointCloud<pcl::Normal>::Ptr cloud_normal(new pcl::PointCloud<pcl::Normal>);
+pcl::PointCloud<pcl::PointXYZ>::Ptr cloud_in(new pcl::PointCloud<pcl::PointXYZ>);
+vector<Eigen::Vector3f> CamCenter;
+
+class _declspec(dllexport) CCloudOptimization
+{
+public:
+	void Init(int sor_meank, double sor_stdThres, double mls_radius, CManageData *ImageData);
+	void InsertPoint(cv::Mat p);
+	void filter(int idx);
+	void run();
+private:
+	int m_sor_meank;
+	double m_mls_radius;
+	double m_sor_stdThres;
+	CManageData *m_ImageData;
+};
+
 inline void reverse(float &x) { x = -x;}
 
 
-void CCloudOptimization::Init(int sor_meank, double sor_stdThres, CManageData *ImageData)
+void CCloudOptimization::Init(int sor_meank, double sor_stdThres, double mls_radius, CManageData *ImageData)
 {
 	m_sor_meank = sor_meank;
 	m_sor_stdThres = sor_stdThres;
+	m_mls_radius = mls_radius;
 	m_ImageData = ImageData;
 	CamCenter.resize(m_ImageData->m_CampairNum);
 	for (int i=0; i<m_ImageData->m_CampairNum; i++)
@@ -97,10 +119,9 @@ void CCloudOptimization::run()
 	Eigen::Vector4f centroid;
 	pcl::compute3DCentroid (*cloud,centroid);
 	Eigen::Vector3f m_ObjectCenter = Eigen::Vector3f(centroid[0], centroid[1], centroid[2]);
-
+	
  	vector<vector<Eigen::Matrix3f>> R(m_ImageData->m_CampairNum);
 	vector<vector<Eigen::Vector3f>> T(m_ImageData->m_CampairNum);
-	cout<<"0"<<endl;
 	for (int j=0; j<m_ImageData->m_CampairNum; j++)
 	{
 		R[j].resize(2);
@@ -113,9 +134,9 @@ void CCloudOptimization::run()
 		for (int i=0; i<m_ImageData->cam[j][0].bound.height; i++)
 			m_ImageData->cam[j][0].bucket[i] = new vector<int> [m_ImageData->cam[j][0].bound.width];
 	}
-	cout<<"1"<<endl;
-
+	cout<<m_ObjectCenter<<endl;
 	//遍历所有点，判断所属视角，然后向参考相机投影
+	vector<vector<int>> cam_indices(m_ImageData->m_CampairNum);
 	for (int i=0; i<cloud->size(); i++)
 	{
 		//找到所属视角，仅第一个相机
@@ -134,6 +155,7 @@ void CCloudOptimization::run()
 				cam_belongedto = j;
 			}
 		}
+		cam_indices[cam_belongedto].push_back(i);
 		//投影
 		Boundary &current_bound = m_ImageData->cam[cam_belongedto][0].bound;
 		Eigen::Vector3f current_imgPt = R[cam_belongedto][0] * current_point + T[cam_belongedto][0];
@@ -144,7 +166,38 @@ void CCloudOptimization::run()
 			continue;
 		m_ImageData->cam[cam_belongedto][0].bucket[current_y][current_x].push_back(i);
  	}
-	cout<<"2"<<endl;
+
+	for (int i=0; i<m_ImageData->m_CampairNum; i++)
+	{
+		boost::shared_ptr<std::vector<int> > indicesptr_temp (new std::vector<int> (cam_indices[i]));
+		pcl::ExtractIndices<pcl::PointXYZ> extract;
+		extract.setInputCloud (cloud);
+		extract.setIndices (indicesptr_temp);
+		extract.setNegative (false);
+		extract.filter (*cloud_in);
+		char name[100];
+		sprintf(name, "cloud_filter%d.ply", i+10);
+		pcl::io::savePLYFileBinary(name, *cloud_in);
+	}
+// 	for (int i=0; i<m_ImageData->m_CampairNum; i++)
+// 	{
+// 		char fname[512];
+// 		sprintf(fname, "%d_pre.txt", i);
+// 		FILE *fp = fopen(fname,"w");
+// 		vector<camera> &current_cam = m_ImageData->cam[i];
+// 		int XL = current_cam[0].bound.XL;
+// 		int XR = current_cam[0].bound.XR;
+// 		int YL = current_cam[0].bound.YL;
+// 		int YR = current_cam[0].bound.YR;
+// 		for (int y=YL; y<=YR; y++)
+// 		{
+// 			for (int x=XL; x<=XR; x++)
+// 				fprintf(fp, "%d ", current_cam[0].bucket[y-YL][x-XL].size());
+// 			fprintf(fp, "\n");
+// 		}
+// 		fclose(fp);
+// 	}
+
 	vector<int> indices;
 	//对每个视角
 	vector<pcl::Normal,Eigen::aligned_allocator<pcl::Normal>> &normal = cloud_normal->points;
@@ -152,29 +205,38 @@ void CCloudOptimization::run()
 	int MatchBlockRadius = 2;
 	int window_size = 2*MatchBlockRadius+1;
 	int vec_size = square_(window_size)*3;
+	
 	for (int i=0; i<m_ImageData->m_CampairNum; i++)
 	{
+// 		char fname[512];
+// 		sprintf(fname, "%d.txt", i);
+// 		FILE *fp = fopen(fname,"w");
 		vector<camera> &current_cam = m_ImageData->cam[i];
 		int XL = current_cam[0].bound.XL;
 		int XR = current_cam[0].bound.XR;
 		int YL = current_cam[0].bound.YL;
 		int YR = current_cam[0].bound.YR;
+//		printf("current %d\n", i);
+		int count0 = 0;
 		for (int y=YL; y<=YR; y++)
 		{
 			uchar *mask_ptr = current_cam[0].mask.ptr<uchar>(y);
 			for (int x=XL; x<=XR; x++)
 			{
 				if (mask_ptr[x]!=255)
+				{
+//					fprintf(fp, "%d ", 0);
 					continue;
+				}
+				int count = 0;
 				vector<int> &current_bucket = current_cam[0].bucket[y-YL][x-XL];
 				size_t candidate_size = current_bucket.size();
-				if (candidate_size >= 2)
-					printf("%d %d %d %d ",i,y,x,candidate_size);
 				switch(candidate_size)
 				{
 				case 0:
 					break;
 				case 1:
+					count++;
 					indices.push_back(current_bucket[0]);
 					break;
 				case 2:
@@ -184,6 +246,7 @@ void CCloudOptimization::run()
 					{
 						indices.push_back(current_bucket[0]);
 						indices.push_back(current_bucket[1]);
+						count+=2;
 					}
 					else
 					{
@@ -196,8 +259,11 @@ void CCloudOptimization::run()
 							Eigen::Vector3f current_imgPt = R[i][1] * point[current_bucket[k]].getVector3fMap() + T[i][1];
 							int current_x = ROUND(current_imgPt[0]/current_imgPt[2]);
 							int current_y = ROUND(current_imgPt[1]/current_imgPt[2]);
-							if ( current_cam[1].mask.at<uchar>(current_x, current_y) != 255)
+							if ( current_cam[1].mask.at<uchar>(current_y, current_x) != 255)
+							{
+								count0++;
 								continue;
+							}
 							double normR = m_ImageData->WindowToVec(current_cam[1].image, x-MatchBlockRadius, y-MatchBlockRadius, window_size, vecR);
 							double CurrentValue = arma::dot(vecL, vecR)/(normR*normL);
 							if (CurrentValue > CurrentMaxValue)
@@ -206,15 +272,18 @@ void CCloudOptimization::run()
 								CurrentMaxValue = CurrentValue;
 							}
 						}
-						if (temp_i > 0)
+						if (temp_i >= 0)
+						{
+							count++;
 							indices.push_back(current_bucket[temp_i]);
+						}
 					}
 					break;
 				default:
 					//多于2个时先按距离从大到小排序
 					vector<int> current_bucket_sorted_idx(candidate_size);
 					vector<float> current_dist(candidate_size);
-					//法向是否面朝相机，0表示是，1表示反向
+					//法向是否面朝相机，1表示是，0表示反向
 					vector<bool> current_direct(candidate_size);
 					//计算距离和朝向
 					for (int l=0; l<candidate_size; l++)
@@ -223,32 +292,27 @@ void CCloudOptimization::run()
 						current_dist[l] = direct.norm();
 						current_direct[l] = normal[current_bucket[l]].getNormalVector3fMap().dot(direct) < 0;
 					}
-					printf("是这崩的吗？\n");
 					for (int l=0; l<candidate_size; l++)
 					{
 						float Max_dist = 0;
 						int max_idx = -1;
 						for (int k=0; k<candidate_size; k++)
 						{
-							if (k==l)
-								continue;
-							if (Max_dist < current_dist[l])
+							if (Max_dist < current_dist[k])
 							{
-								Max_dist = current_dist[l];
+								Max_dist = current_dist[k];
 								max_idx = k;
 							}
 						}
-						assert(max_idx>=0);
 						current_dist[max_idx] = 0;
 						current_bucket_sorted_idx[l] = max_idx;
 					}
-					printf("还是在这？\n");
-					//current_dist.clear();
+					current_dist.clear();
 					int last_idx = 0;
 					for (int l=1; l<candidate_size; l++)
 					{
 						if (current_direct[current_bucket_sorted_idx[last_idx]] == 
-							current_direct[current_bucket_sorted_idx[l]])
+							current_direct[current_bucket_sorted_idx[l]] && l!=candidate_size-1)
 							continue;
 						
 						short temp_i = last_idx;
@@ -263,8 +327,11 @@ void CCloudOptimization::run()
 								Eigen::Vector3f current_imgPt = R[i][1] * point[current_bucket[current_bucket_sorted_idx[k]]].getVector3fMap() + T[i][1];
 								int current_x = ROUND(current_imgPt[0]/current_imgPt[2]);
 								int current_y = ROUND(current_imgPt[1]/current_imgPt[2]);
-								if ( current_cam[1].mask.at<uchar>(current_x, current_y) != 255)
+								if ( current_cam[1].mask.at<uchar>(current_y, current_x) != 255)
+								{
+									count0++;
 									continue;
+								}
 								double normR = m_ImageData->WindowToVec(current_cam[1].image, x-MatchBlockRadius, y-MatchBlockRadius, window_size, vecR);
 								double CurrentValue = arma::dot(vecL, vecR)/(normR*normL);
 								if (CurrentValue > CurrentMaxValue)
@@ -275,17 +342,18 @@ void CCloudOptimization::run()
 							}
 						}
 						indices.push_back(current_bucket[current_bucket_sorted_idx[temp_i]]);
+						count++;
 						last_idx = l;
 					}
-					printf("肯定不会是这？！\n");
 				}
-				//printf("%d\n",candidate_size);
+//				fprintf(fp, "%d ", count);
 			}
+//			fprintf(fp, "\n");
 		}
+//		printf("count0: %d\n", count0);
+//		fclose(fp);
 	}
-
-	cout<<"3"<<endl;
-
+	
 
 
 	for (int j=0; j<m_ImageData->m_CampairNum; j++)
@@ -295,12 +363,19 @@ void CCloudOptimization::run()
 		delete [] m_ImageData->cam[j][0].bucket;
 	}
 	boost::shared_ptr<std::vector<int> > indicesptr (new std::vector<int> (indices));
+// 	pcl::ExtractIndices<pcl::PointXYZ> extract;
+// 	extract.setInputCloud (cloud);
+// 	extract.setIndices (indicesptr);
+// 	extract.setNegative (false);
+// 	extract.filter (*cloud_in);
+	
+	cout<<"cloud size: "<<cloud_in->size()<<endl<<"indices size: "<<indicesptr->size()<<endl;
 	pcl::MovingLeastSquaresOMP<pcl::PointXYZ, pcl::PointNormal> mls;
 	mls.setNumberOfThreads(8);
 	mls.setComputeNormals (true);
 	mls.setInputCloud (cloud);
 	mls.setIndices(indicesptr);
-	mls.setSearchRadius (2.5);
+	mls.setSearchRadius (m_mls_radius);
 	mls.setPolynomialFit (true);
 	mls.setPolynomialOrder (1);
 //	mls.setUpsamplingMethod (pcl::MovingLeastSquares<pcl::PointXYZ, pcl::PointNormal>::SAMPLE_LOCAL_PLANE );
@@ -318,7 +393,7 @@ void CCloudOptimization::run()
 		current_direction_normed /= current_direction_normed.norm();
 		float min_value = 2;
 		Eigen::Vector3f best_camdir;
-		for (int j=0; j<m_ImageData->m_CameraNum; j++)
+		for (int j=0; j<m_ImageData->m_CampairNum; j++)
 		{
 			Eigen::Vector3f current_camdir = CamCenter[j]-current_point;
 			float current_value = current_direction_normed.dot(current_camdir)/current_camdir.norm();
@@ -335,5 +410,12 @@ void CCloudOptimization::run()
 			reverse(cloud_ms_normals->points[i].normal_z);
 		}	
 	}
+// 	pcl::StatisticalOutlierRemoval<pcl::PointNormal> sor;
+// 	pcl::PointCloud<pcl::PointNormal>::Ptr cloud_final (new pcl::PointCloud<pcl::PointNormal> ());
+// 	sor.setInputCloud (cloud_ms_normals);
+// 	sor.setMeanK (m_sor_meank);
+// 	sor.setStddevMulThresh (m_sor_stdThres);//face 0.3
+// 	sor.filter (*cloud_final);
+	printf("final points: %d\n",cloud_ms_normals->points.size());
 	pcl::io::savePLYFileBinary("cloud_ms_normals.ply", *cloud_ms_normals);
 }

@@ -17,14 +17,15 @@
 class __declspec(dllimport) CCloudOptimization
 {
 public:
-	void Init(int sor_meank, double sor_stdThres, CManageData *m_data);
+	void Init(int sor_meank, double sor_stdThres, double mls_radius, CManageData *m_data);
 	void InsertPoint(cv::Mat p);
 	void filter(int idx);
 	void run();
 private:
-	int m_CameraNum;
 	int m_sor_meank;
+	double m_mls_radius;
 	double m_sor_stdThres;
+	CManageData *m_ImageData;
 };
 
 class CStereoMatching
@@ -39,7 +40,7 @@ public:
 	Boundary margin[2];
 	int Verbose;
 	// initial function, must be called after declaim
-	void Init(CManageData * data, CCloudOptimization * CloudOptimization, int radii = 2, double ws = 0.5, int disparity_offset = 1);						
+	void Init(CManageData * data, CCloudOptimization * CloudOptimization, int radii = 2, double ws = 0.5, int disparity_offset = 2);						
 	void MatchAllLayer();
 private:
 	void MatchOneLayer(cv::Mat disparity[], int Pyrm_depth);

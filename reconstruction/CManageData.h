@@ -40,7 +40,21 @@ public:
 	~CManageData();
 	bool Init(cv::FileStorage fs);
 	double WindowToVec(uchar * image_ptr[], int x, int window_size, arma::vec &u);	// get pixels of a window in image and return a vec
-	double WindowToVec(cv::Mat image, int x, int y, int window_size, arma::vec &u);
+	double WindowToVec(cv::Mat image, int x, int y, int window_size, arma::vec &u)
+	{
+		int k = 0;
+		int x3 = x*3;
+		int w3 = window_size*3;
+		for (int i=y; i<y+window_size; i++)
+		{
+			uchar *ptr = image.ptr<uchar>(i)+x3;
+			for (int j=0; j<w3; j++)
+				u(k++) = ptr[j];
+		}
+		u -= mean(u);
+		double normu = norm(u);
+		return normu==0?1:normu;
+	};
 	bool SaveMat(cv::Mat input, char * filename);
 };
 

@@ -84,21 +84,7 @@ double CManageData::WindowToVec(uchar * image_ptr[], int x, int window_size, arm
 	return normu==0?1:normu;
 }
 
-double CManageData::WindowToVec(cv::Mat image, int x, int y, int window_size, arma::vec &u)
-{
-	int k = 0;
-	int x3 = x*3;
-	int w3 = window_size*3;
-	for (int i=y; i<y+window_size; i++)
-	{
-		uchar *ptr = image.ptr<uchar>(i)+x3;
-		for (int j=0; j<w3; j++)
-			u(k++) = ptr[j];
-	}
-	u -= mean(u);
-	double normu = norm(u);
-	return normu==0?1:normu;
-}
+
 
 bool CManageData::SaveMat(cv::Mat input, char * filename)
 {
