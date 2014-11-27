@@ -23,6 +23,8 @@ CManageData::~CManageData()
 bool CManageData::Init(cv::FileStorage fs)
 {
 	fs["filepath"]>>m_FilePath;
+	fs["outfilename"]>>outfilename;
+	fs["isoutput"]>>isoutput;
 	string camera_calib_name;
 	fs["camera_calib_name"]>>camera_calib_name;
 	int LowestLevelWidth, LowestLevelHeight;

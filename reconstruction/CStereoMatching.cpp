@@ -93,7 +93,7 @@ void CStereoMatching::MatchOneLayer(cv::Mat disparity[], int Pyrm_depth)
 //  m_data->SaveMat(disparity[0], "disparity50.dat");
 //  m_data->SaveMat(disparity[1], "disparity51.dat");
 // 	DisparityToCloud<short>(disparity[0], mask[0], Q, Pyrm_depth, true, 11+10*Pyrm_depth);
-	int iteration = 40+Pyrm_depth*20;
+	int iteration = 20+Pyrm_depth*20;
 //	clock_t part = clock();
 	DisparityRefine(disparity[0], image, iteration, true);
 	DisparityRefine(disparity[1], image_inv, iteration, false);
@@ -150,16 +150,21 @@ void CStereoMatching::Rectify(int CamPair, cv::Mat &Q)
 			printf("read image %s error\n", current_cam[j].image_name.c_str());
 			return ;
 		}
+//		cv::medianBlur(img,img,5);
 		cv::remap(img, current_cam[j].image, rmap[0], rmap[1], CV_INTER_LINEAR);
+//		cv::medianBlur(current_cam[j].image,current_cam[j].image,5);
 		img = cv::imread(current_cam[j].mask_name, CV_LOAD_IMAGE_GRAYSCALE);
 		cv::remap(img, current_cam[j].mask, rmap[0], rmap[1], CV_INTER_LINEAR);
-#ifdef IS_OUTPUT
-		char filename[MAX_PATH];
-		sprintf(filename, "%d.jpg", current_cam[j].camID);
-		cv::imwrite(filename, current_cam[j].image);
-		sprintf(filename, "%d_mask.jpg", current_cam[j].camID);
-		cv::imwrite(filename, current_cam[j].mask);
-#endif
+		cv::Mat element = cv::getStructuringElement( cv::MORPH_ELLIPSE, cv::Size( 3*m_data->m_PyrmNum, 3*m_data->m_PyrmNum ));
+		cv::erode(current_cam[j].mask, current_cam[j].mask, element);
+		if (m_data->isoutput)
+		{
+			char filename[MAX_PATH];
+			sprintf(filename, "%d.jpg", current_cam[j].camID);
+			cv::imwrite(filename, current_cam[j].image);
+	// 		sprintf(filename, "%d_mask.jpg", current_cam[j].camID);
+	// 		cv::imwrite(filename, current_cam[j].mask);
+		}
 	}
 }
 
@@ -1029,17 +1034,15 @@ void CStereoMatching::FindMargin(Boundary &m, cv::Mat mask)
 
 void CStereoMatching::ConstructPyrm(int CamPair)
 {
-	cv::Mat element = cv::getStructuringElement( cv::MORPH_ELLIPSE, cv::Size( 5, 5 ));
+	
 	for (int ID=0; ID<2; ID++)
 	{
 		m_data->cam[CamPair][ID].image.copyTo(m_data->imagePyrm[m_data->m_PyrmNum-1][ID]);
+		m_data->cam[CamPair][ID].mask.copyTo(m_data->maskPyrm[m_data->m_PyrmNum-1][ID]);
 		for (int i=m_data->m_PyrmNum-1; i>0; i--)
 		{
 			pyrDown(m_data->imagePyrm[i][ID], m_data->imagePyrm[i-1][ID]);
-			cv::resize(m_data->cam[CamPair][ID].mask,  m_data->maskPyrm[i][ID], m_data->m_LowestLevelSize*(1<<i), 0, 0, CV_INTER_AREA);
-			cv::erode(m_data->maskPyrm[i][ID], m_data->maskPyrm[i][ID], element);
+			pyrDown(m_data->maskPyrm[i][ID], m_data->maskPyrm[i-1][ID]);
 		}
-		cv::resize(m_data->cam[CamPair][ID].mask,  m_data->maskPyrm[0][ID], m_data->m_LowestLevelSize, 0, 0, CV_INTER_AREA);
-		cv::erode(m_data->maskPyrm[0][ID], m_data->maskPyrm[0][ID], element);
 	}
 }

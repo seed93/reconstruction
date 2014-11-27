@@ -4,6 +4,7 @@
 reconstruction/x64/
 CloudOptimization/x64/
 Kinect2Cloud/x64/
+background_subtraction/x64/
 dlls/
 .svn/
 

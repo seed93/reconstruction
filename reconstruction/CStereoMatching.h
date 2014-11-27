@@ -17,14 +17,17 @@
 class __declspec(dllimport) CCloudOptimization
 {
 public:
-	void Init(int sor_meank, double sor_stdThres, double mls_radius, CManageData *m_data);
+	void Init(int sor_meank, double sor_stdThres, int sor_meank1, double sor_stdThres1, double mls_radius, CManageData *m_data, bool isdelete_);
 	void InsertPoint(cv::Mat p);
 	void filter(int idx);
 	void run();
 private:
 	int m_sor_meank;
 	double m_mls_radius;
+	int m_sor_meank1;
+	double m_sor_stdThres1;
 	double m_sor_stdThres;
+	bool isdelete;
 	CManageData *m_ImageData;
 };
 

@@ -12,7 +12,7 @@ int main(int Argc, char ** Argv)
 	else strcpy(config_file, Argv[1]);
 	if (recon.Init(config_file) == false)
 		return -1;
-//	recon.m_PreProcess.Process(2);
+//	recon.m_PreProcess.Process();
 
  	recon.m_Matching.MatchAllLayer();
  	printf("Matching time: %.3f s\n",double(clock()-start)/1000.);

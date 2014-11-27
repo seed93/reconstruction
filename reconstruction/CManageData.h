@@ -34,6 +34,8 @@ public:
 	int m_PyrmNum;								// number of pyramid levels
 	cv::Size m_LowestLevelSize;						// size of lowest level image
 	string m_FilePath;							// input file path
+	int isoutput;
+	string outfilename;
 	cv::Size m_OriginSize;
 	cv::Mat **imagePyrm, **maskPyrm;
 	CManageData();

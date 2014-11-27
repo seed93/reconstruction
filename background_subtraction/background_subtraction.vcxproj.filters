@@ -15,27 +15,7 @@
     </Filter>
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="..\reconstruction\CManageData.h">
-      <Filter>头文件</Filter>
-    </ClInclude>
-    <ClInclude Include="CCloudOptimization.h">
-      <Filter>头文件</Filter>
-    </ClInclude>
-    <ClInclude Include="my_ply_interface.h">
-      <Filter>头文件</Filter>
-    </ClInclude>
-    <ClInclude Include="rply.h">
-      <Filter>头文件</Filter>
-    </ClInclude>
-  </ItemGroup>
-  <ItemGroup>
-    <ClCompile Include="CCloudOptimization.cpp">
-      <Filter>源文件</Filter>
-    </ClCompile>
-    <ClCompile Include="my_ply_interface.cpp">
-      <Filter>源文件</Filter>
-    </ClCompile>
-    <ClCompile Include="rply.c">
+    <ClCompile Include="bk_subtraction.cpp">
       <Filter>源文件</Filter>
     </ClCompile>
   </ItemGroup>
