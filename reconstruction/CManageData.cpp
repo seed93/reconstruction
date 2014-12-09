@@ -36,10 +36,9 @@ bool CManageData::Init(cv::FileStorage fs)
 	m_CampairNum = ((int)camID.length()+1)/3;
 	cam.resize(m_CampairNum);
 
-	vector<string> imagelist, masklist, backgroundlist;
+	vector<string> imagelist, masklist;
 	fs["imagelist"]>>imagelist;
 	fs["masklist"]>>masklist;
-	fs["backgroundlist"]>>backgroundlist;
 	m_CameraNum = (int)imagelist.size();
 	
 	cv::FileStorage f_calib(m_FilePath+camera_calib_name, cv::FileStorage::READ);
@@ -51,7 +50,6 @@ bool CManageData::Init(cv::FileStorage fs)
 			cam[i][k].camID = camID[i*3+k]-'0';
 			cam[i][k].image_name = m_FilePath+imagelist[cam[i][k].camID];
 			cam[i][k].mask_name = m_FilePath+masklist[cam[i][k].camID];
-			cam[i][k].background_name = m_FilePath+backgroundlist[cam[i][k].camID];
 			string currentID = to_string((_Longlong)cam[i][k].camID);
 			f_calib["intrinsic-"+currentID]>>cam[i][k].MatIntrinsics;
 			f_calib["extrinsic-"+currentID]>>cam[i][k].MatExtrinsics;

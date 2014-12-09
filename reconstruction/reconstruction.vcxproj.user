@@ -6,7 +6,7 @@
     <LocalDebuggerCommandArguments>config_PT.yml</LocalDebuggerCommandArguments>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
-    <LocalDebuggerCommandArguments>config_PT.yml</LocalDebuggerCommandArguments>
+    <LocalDebuggerCommandArguments>config.yml</LocalDebuggerCommandArguments>
     <DebuggerFlavor>WindowsLocalDebugger</DebuggerFlavor>
     <LocalDebuggerWorkingDirectory>$(SolutionDir)dlls\$(Configuration)</LocalDebuggerWorkingDirectory>
   </PropertyGroup>

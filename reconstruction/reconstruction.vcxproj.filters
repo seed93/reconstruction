@@ -27,9 +27,6 @@
     <ClCompile Include="CReconstruction.cpp">
       <Filter>源文件</Filter>
     </ClCompile>
-    <ClCompile Include="CPreProcess.cpp">
-      <Filter>源文件</Filter>
-    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="CStereoMatching.h">
@@ -42,9 +39,6 @@
       <Filter>头文件</Filter>
     </ClInclude>
     <ClInclude Include="CManageData.h">
-      <Filter>头文件</Filter>
-    </ClInclude>
-    <ClInclude Include="CPreProcess.h">
       <Filter>头文件</Filter>
     </ClInclude>
   </ItemGroup>

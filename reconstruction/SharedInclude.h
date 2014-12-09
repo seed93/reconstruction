@@ -47,6 +47,6 @@ using namespace std;
 #define square_(x) ((x)*(x))
 #define ROUND(x) ((int)((x)+0.5))
 #define MAX_PATH 1024
-//#define IS_PLY
+#define IS_PLY
 #define IS_PCL
 #endif

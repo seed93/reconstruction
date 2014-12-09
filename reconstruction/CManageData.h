@@ -17,7 +17,7 @@ struct camera
 {
 	cv::Mat CamCenter;
 	cv::Mat P,MatIntrinsics,MatExtrinsics;
-	string image_name,background_name,mask_name;
+	string image_name,mask_name;
 	cv::Mat image;
 	cv::Mat mask;
 	Boundary bound;

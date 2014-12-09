@@ -6,6 +6,8 @@ pcl::PointCloud<pcl::PointXYZ>::Ptr cloud(new pcl::PointCloud<pcl::PointXYZ>);
 pcl::PointCloud<pcl::Normal>::Ptr cloud_normal(new pcl::PointCloud<pcl::Normal>);
 pcl::PointCloud<pcl::PointXYZ>::Ptr cloud_in(new pcl::PointCloud<pcl::PointXYZ>);
 vector<Eigen::Vector3f> CamCenter;
+vector<vector<Eigen::Matrix3f>> R;
+vector<vector<Eigen::Vector3f>> T;
 cv::Mat current_img;
 int current_img_width, current_img_height;
 Eigen::Matrix3f current_R;
@@ -42,6 +44,11 @@ void CCloudOptimization::Init(int sor_meank, double sor_stdThres, int sor_meank1
 	CamCenter.resize(m_ImageData->m_CampairNum);
 	for (int i=0; i<m_ImageData->m_CampairNum; i++)
 		cv::cv2eigen(m_ImageData->cam[i][0].CamCenter, CamCenter[i]);
+	R.resize(m_ImageData->m_CampairNum);
+	T.resize(m_ImageData->m_CampairNum);
+	char cmd[MAX_PATH];
+	sprintf(cmd, "mkdir tmp");
+	system(cmd);
 }
 
 
@@ -52,8 +59,20 @@ void CCloudOptimization::InsertPoint(cv::Mat p)
 
 void CCloudOptimization::filter(int idx)
 {
+	R[idx].resize(2);
+	T[idx].resize(2);
+	cv::cv2eigen(m_ImageData->cam[idx][0].P.colRange(0,3), R[idx][0]);
+	cv::cv2eigen(m_ImageData->cam[idx][1].P.colRange(0,3), R[idx][1]);
+	cv::cv2eigen(m_ImageData->cam[idx][0].P.col(3), T[idx][0]);
+	cv::cv2eigen(m_ImageData->cam[idx][1].P.col(3), T[idx][1]);
+	if (isdelete)
+	{
+		m_ImageData->cam[idx][0].bucket = new vector<int> *[m_ImageData->cam[idx][0].bound.height];
+		for (int i=0; i<m_ImageData->cam[idx][0].bound.height; i++)
+			m_ImageData->cam[idx][0].bucket[i] = new vector<int> [m_ImageData->cam[idx][0].bound.width];
+	}
+
 	pcl::PointCloud<pcl::PointXYZ>::Ptr cloud_filtered (new pcl::PointCloud<pcl::PointXYZ>);
-	pcl::PointCloud<pcl::PointXYZ>::Ptr cloud_filtered2 (new pcl::PointCloud<pcl::PointXYZ>);
 	
 	pcl::StatisticalOutlierRemoval<pcl::PointXYZ> sor;
 	sor.setInputCloud (cloud_in);
@@ -74,75 +93,38 @@ void CCloudOptimization::filter(int idx)
 	pcl::PointCloud<pcl::Normal>::Ptr current_cloud_normals (new pcl::PointCloud<pcl::Normal>);
 	ne.setRadiusSearch (2.5);			//to be changed
 	ne.compute (*current_cloud_normals);
-	ne.setViewPoint(CamCenter[idx][0], CamCenter[idx][1], CamCenter[idx][2]);
+	ne.setViewPoint(-CamCenter[idx][0], -CamCenter[idx][1], -CamCenter[idx][2]);
 	*cloud_normal += *current_cloud_normals;
-// 	char name[100];
-// 	sprintf(name, "cloud_filter%d.ply", idx);
-// 	pcl::io::savePLYFileBinary(name, *cloud_filtered);
+
+	pcl::PointCloud<pcl::PointNormal>::Ptr cloud_normal (new pcl::PointCloud<pcl::PointNormal>);
+	pcl::concatenateFields(*current_cloud_normals, *cloud_filtered, *cloud_normal);
+ 	char name[MAX_PATH];
+ 	pcl::io::savePLYFileBinary("tmp\\cloud_filter.ply", *cloud_normal);
+	system("mesh.bat");
+	current_img_width = m_ImageData->cam[idx][0].image.cols;
+	current_img_height = m_ImageData->cam[idx][0].image.rows;
+	MyPlyIo myPlyIo(texture_color, 'b');
+	sprintf(name, "tmp\\color_%d.ply", idx);
+	current_img = m_ImageData->cam[idx][0].image;
+	current_R = R[idx][0];
+	current_T = T[idx][0];
+	if (myPlyIo.ReadAndWrite("tmp\\mesh_trimmer.ply", name))
+		std::cout << "fail\n";
+	sprintf(name, "tmp\\color_%d.ply", idx+5);
+	current_img = m_ImageData->cam[idx][1].image;
+	current_R = R[idx][1];
+	current_T = T[idx][1];
+	if (myPlyIo.ReadAndWrite("tmp\\mesh_trimmer.ply", name))
+		std::cout << "fail\n";
 	cloud_in->clear();
 }
 
 void CCloudOptimization::run()
 {
-// 	char filename[100];
-// 	for (int i=0; i<5; i++)
-// 	{
-// 		sprintf(filename, "cloud%d.ply", i);
-// 		pcl::io::loadPLYFile(filename, cloud_in);
-// 		filter();
-// 	}
-	
 	Eigen::Vector4f centroid;
 	pcl::compute3DCentroid (*cloud,centroid);
 	Eigen::Vector3f m_ObjectCenter = Eigen::Vector3f(centroid[0]-50, centroid[1], centroid[2]);
 	
- 	vector<vector<Eigen::Matrix3f>> R(m_ImageData->m_CampairNum);
-	vector<vector<Eigen::Vector3f>> T(m_ImageData->m_CampairNum);
-	for (int j=0; j<m_ImageData->m_CampairNum; j++)
-	{
-		R[j].resize(2);
-		T[j].resize(2);
-		cv::cv2eigen(m_ImageData->cam[j][0].P.colRange(0,3), R[j][0]);
-		cv::cv2eigen(m_ImageData->cam[j][1].P.colRange(0,3), R[j][1]);
-		cv::cv2eigen(m_ImageData->cam[j][0].P.col(3), T[j][0]);
-		cv::cv2eigen(m_ImageData->cam[j][1].P.col(3), T[j][1]);
-		m_ImageData->cam[j][0].bucket = new vector<int> *[m_ImageData->cam[j][0].bound.height];
-		for (int i=0; i<m_ImageData->cam[j][0].bound.height; i++)
-			m_ImageData->cam[j][0].bucket[i] = new vector<int> [m_ImageData->cam[j][0].bound.width];
-	}
-
-	//遍历所有点，判断所属视角，然后向参考相机投影
-	vector<vector<int>> cam_indices(m_ImageData->m_CampairNum);
-	for (int i=0; i<cloud->size(); i++)
-	{
-		//找到所属视角，仅第一个相机
-		Eigen::Vector3f current_point = cloud->points[i].getVector3fMap();
-		Eigen::Vector3f current_direction_normed = m_ObjectCenter-current_point;
-		current_direction_normed /= current_direction_normed.norm();
-		float min_value = 2;
-		int cam_belongedto = 0;
-		for (int j=0; j<m_ImageData->m_CampairNum; j++)
-		{
-			Eigen::Vector3f current_camdir = CamCenter[j]-current_point;
-			float current_value = current_direction_normed.dot(current_camdir)/current_camdir.norm();
-			if (min_value > current_value)
-			{
-				min_value = current_value;
-				cam_belongedto = j;
-			}
-		}
-		cam_indices[cam_belongedto].push_back(i);
-		//投影
-		Boundary &current_bound = m_ImageData->cam[cam_belongedto][0].bound;
-		Eigen::Vector3f current_imgPt = R[cam_belongedto][0] * current_point + T[cam_belongedto][0];
-		int current_x = ROUND(current_imgPt[0]/current_imgPt[2])-current_bound.XL;
-		int current_y = ROUND(current_imgPt[1]/current_imgPt[2])-current_bound.YL;
-		if (current_x < 0 || current_x >= current_bound.width || \
-			current_y < 0 || current_y >= current_bound.height)
-			continue;
-		m_ImageData->cam[cam_belongedto][0].bucket[current_y][current_x].push_back(i);
- 	}
-
 // 	for (int i=0; i<m_ImageData->m_CampairNum; i++)
 // 	{
 // 		boost::shared_ptr<std::vector<int> > indicesptr_temp (new std::vector<int> (cam_indices[i]));
@@ -158,7 +140,36 @@ void CCloudOptimization::run()
 
 	boost::shared_ptr<std::vector<int> > indicesptr (new vector<int> );
 	if (isdelete)
-	{		
+	{	
+		//遍历所有点，判断所属视角，然后向参考相机投影
+		for (int i=0; i<cloud->size(); i++)
+		{
+			//找到所属视角，仅第一个相机
+			Eigen::Vector3f current_point = cloud->points[i].getVector3fMap();
+			Eigen::Vector3f current_direction_normed = m_ObjectCenter-current_point;
+			current_direction_normed /= current_direction_normed.norm();
+			float min_value = 2;
+			int cam_belongedto = 0;
+			for (int j=0; j<m_ImageData->m_CampairNum; j++)
+			{
+				Eigen::Vector3f current_camdir = CamCenter[j]-current_point;
+				float current_value = current_direction_normed.dot(current_camdir)/current_camdir.norm();
+				if (min_value > current_value)
+				{
+					min_value = current_value;
+					cam_belongedto = j;
+				}
+			}
+			//投影
+			Boundary &current_bound = m_ImageData->cam[cam_belongedto][0].bound;
+			Eigen::Vector3f current_imgPt = R[cam_belongedto][0] * current_point + T[cam_belongedto][0];
+			int current_x = ROUND(current_imgPt[0]/current_imgPt[2])-current_bound.XL;
+			int current_y = ROUND(current_imgPt[1]/current_imgPt[2])-current_bound.YL;
+			if (current_x < 0 || current_x >= current_bound.width || \
+				current_y < 0 || current_y >= current_bound.height)
+				continue;
+			m_ImageData->cam[cam_belongedto][0].bucket[current_y][current_x].push_back(i);
+		}
 		//对每个视角
 		vector<pcl::Normal,Eigen::aligned_allocator<pcl::Normal>> &normal = cloud_normal->points;
 		vector<pcl::PointXYZ,Eigen::aligned_allocator<pcl::PointXYZ>> &point = cloud->points;
@@ -302,7 +313,6 @@ void CCloudOptimization::run()
 				}
 			}
 		}
-
 		for (int j=0; j<m_ImageData->m_CampairNum; j++)
 		{
 			for (int i=0; i<m_ImageData->cam[j][0].bound.height; i++)
@@ -329,13 +339,10 @@ void CCloudOptimization::run()
 	mls.process (*cloud_ms_normals);
 	cloud->clear();
 	std::cerr << *cloud_ms_normals;
-// 	pcl::StatisticalOutlierRemoval<pcl::PointNormal> sor;
-// 	pcl::PointCloud<pcl::PointNormal>::Ptr cloud_final (new pcl::PointCloud<pcl::PointNormal> ());
-// 	sor.setInputCloud (cloud_ms_normals);
-// 	sor.setMeanK (m_sor_meank1);
-// 	sor.setStddevMulThresh (m_sor_stdThres1);//face 0.3
-// 	sor.filter (*cloud_final);
-// 	printf("final points: %d\n",cloud_final->points.size());
+
+
+	printf("3");
+
 	for (int i=0; i<m_ImageData->m_CampairNum; i++)
 	{
 		Eigen::Vector3f temp;
@@ -347,47 +354,24 @@ void CCloudOptimization::run()
 	{
 		indicesptr_part[i].reset(new vector<int>);
 	}
-//#pragma omp parallel for
+#pragma omp parallel for
 	for (int i=0; i<cloud_ms_normals->size(); i++)
 	{
 		Eigen::Vector3f current_point = cloud_ms_normals->points[i].getVector3fMap();
 		Eigen::Vector3f current_direction_normed = m_ObjectCenter-current_point;
 		current_direction_normed /= current_direction_normed.norm();
-		float min_three[3] = {2,2,2};//ascending order
-		int idx[3] = {0,0,0};
+		float min_value = 2;
 		Eigen::Vector3f best_camdir;
 		for (int j=0; j<m_ImageData->m_CameraNum; j++)
 		{
 			Eigen::Vector3f current_camdir = CamCenter[j]-current_point;
 			float current_value = current_direction_normed.dot(current_camdir)/current_camdir.norm();
-			if (current_value < min_three[2])
+			if (current_value < min_value)
 			{
-				if (current_value > min_three[1])
-				{
-					min_three[2] = current_value;
-					idx[2] = j;
-				}else{
-					if (current_value > min_three[0])
-					{
-						min_three[2] = min_three[1];
-						idx[2] = idx[1];
-						min_three[1] = current_value;
-						idx[1] = j;
-					}else{
-						min_three[2] = min_three[1];
-						idx[2] = idx[1];
-						min_three[1] = min_three[0];
-						idx[1] = idx[0];
-						min_three[0] = current_value;
-						idx[0] = j;
-						best_camdir = current_camdir;
-					}
-				}
+				min_value = current_value;
+				best_camdir = current_camdir;
 			}
 		}
-		indicesptr_part[idx[0]]->push_back(i);
-		indicesptr_part[idx[1]]->push_back(i);
-		indicesptr_part[idx[2]]->push_back(i);
 		if (cloud_ms_normals->points[i].getNormalVector3fMap().dot(best_camdir) < 0)
 		{
 			reverse(cloud_ms_normals->points[i].normal_x);
@@ -396,67 +380,15 @@ void CCloudOptimization::run()
 		}	
 	}
 
-	
-
-// 	for (int i=0; i<m_ImageData->m_CameraNum; i++)
-// 	{
-// 		pcl::ExtractIndices<pcl::PointNormal> extract;
-// 		printf("%d: %d\n", i, indicesptr_part[i]->size());
-// 		extract.setInputCloud (cloud_ms_normals);
-// 		extract.setIndices (indicesptr_part[i]);
-// 		extract.setNegative (false);
-// 		pcl::PointCloud<pcl::PointNormal>::Ptr temp (new pcl::PointCloud<pcl::PointNormal> ());
-// 		extract.filter (*temp);
-// 		char name[MAX_PATH];
-// 		sprintf(name, "cloud_filter%d.ply", i+10);
-// 		pcl::io::savePLYFileBinary(name, *temp);
-// 	}
 
 	char cmd[MAX_PATH];
-	sprintf(cmd, "mkdir tmp");
-	system(cmd);
 	pcl::io::savePLYFileBinary("tmp\\bigcloud.ply", *cloud_ms_normals);
 
-// 	pcl::Poisson<pcl::PointNormal> poisson;
-// 	poisson.setDepth(9);
-// 	poisson.setInputCloud(cloud_final);
-// 	poisson.setSolverDivide(9);
-// 	pcl::PolygonMesh mesh;
-// 	poisson.reconstruct(mesh);
-// 	pcl::io::savePLYFileBinary("mesh.ply", mesh);
-	//分割生成彩色点云
-	pcl::PointCloud<pcl::RGB>::Ptr  cloud_color(new pcl::PointCloud<pcl::RGB>);
-	pcl::PointCloud<pcl::PointXYZ>::Ptr  cloud_xyz(new pcl::PointCloud<pcl::PointXYZ>);
-	current_img_width = m_ImageData->cam[0][0].image.cols;
-	current_img_height = m_ImageData->cam[0][0].image.rows;
-	for (int i=0; i<m_ImageData->m_CameraNum; i++)
-	{
-		pcl::ExtractIndices<pcl::PointNormal> extract;
-		extract.setInputCloud (cloud_ms_normals);
-		extract.setIndices (indicesptr_part[i]);
-		extract.setNegative (false);
-		pcl::PointCloud<pcl::PointNormal>::Ptr temp (new pcl::PointCloud<pcl::PointNormal> ());
-		extract.filter (*temp);
-		pcl::io::savePLYFileBinary("tmp\\cloud.ply", *temp);
-		system("mesh.bat");
-
-		int id2=i>4;
-		int id1=i-id2*5;
-		current_img = m_ImageData->cam[id1][id2].image;
-		current_R = R[id1][id2];
-		current_T = T[id1][id2];
-		MyPlyIo myPlyIo(texture_color, 'b');
-		char name[MAX_PATH];
-		sprintf(name, "tmp\\color_%d.ply", i);
-		if (myPlyIo.ReadAndWrite("tmp\\mesh_trimmer.ply", name))
-			std::cout << "fail\n";
-
-	}
 	//meshlab script
 	system("meshlab.bat");
 
 	//texture mapping
-	sprintf(cmd, "TextureStitcher.exe --in tmp\\bigmesh.ply --scans scans.txt --out %s --useKD", m_ImageData->outfilename.c_str());
+	sprintf(cmd, "TextureStitcher.exe --in tmp\\bigmesh.ply --scans scans.txt --out %s --useKD --verbose", m_ImageData->outfilename.c_str());
 	system(cmd);
 }
 

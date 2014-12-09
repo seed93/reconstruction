@@ -7,7 +7,7 @@ Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "CloudOptimization", "CloudO
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "Kinect2Cloud", "Kinect2Cloud\Kinect2Cloud.vcxproj", "{6BA859C0-4080-478D-9766-DD9FA2F4A961}"
 EndProject
-Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "background_subtraction", "background_subtraction\background_subtraction.vcxproj", "{44EE9EF8-0206-47DE-AB96-4623215BCC78}"
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "BatchProcess", "BatchProcess\BatchProcess.vcxproj", "{594E107D-DE5E-4E1B-A753-EF333751E6E2}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -49,16 +49,16 @@ Global
 		{6BA859C0-4080-478D-9766-DD9FA2F4A961}.Release|Win32.ActiveCfg = Release|x64
 		{6BA859C0-4080-478D-9766-DD9FA2F4A961}.Release|x64.ActiveCfg = Release|x64
 		{6BA859C0-4080-478D-9766-DD9FA2F4A961}.Release|x64.Build.0 = Release|x64
-		{44EE9EF8-0206-47DE-AB96-4623215BCC78}.Debug|Mixed Platforms.ActiveCfg = Debug|x64
-		{44EE9EF8-0206-47DE-AB96-4623215BCC78}.Debug|Mixed Platforms.Build.0 = Debug|x64
-		{44EE9EF8-0206-47DE-AB96-4623215BCC78}.Debug|Win32.ActiveCfg = Debug|x64
-		{44EE9EF8-0206-47DE-AB96-4623215BCC78}.Debug|x64.ActiveCfg = Debug|x64
-		{44EE9EF8-0206-47DE-AB96-4623215BCC78}.Debug|x64.Build.0 = Debug|x64
-		{44EE9EF8-0206-47DE-AB96-4623215BCC78}.Release|Mixed Platforms.ActiveCfg = Release|x64
-		{44EE9EF8-0206-47DE-AB96-4623215BCC78}.Release|Mixed Platforms.Build.0 = Release|x64
-		{44EE9EF8-0206-47DE-AB96-4623215BCC78}.Release|Win32.ActiveCfg = Release|x64
-		{44EE9EF8-0206-47DE-AB96-4623215BCC78}.Release|x64.ActiveCfg = Release|x64
-		{44EE9EF8-0206-47DE-AB96-4623215BCC78}.Release|x64.Build.0 = Release|x64
+		{594E107D-DE5E-4E1B-A753-EF333751E6E2}.Debug|Mixed Platforms.ActiveCfg = Debug|x64
+		{594E107D-DE5E-4E1B-A753-EF333751E6E2}.Debug|Mixed Platforms.Build.0 = Debug|x64
+		{594E107D-DE5E-4E1B-A753-EF333751E6E2}.Debug|Win32.ActiveCfg = Debug|x64
+		{594E107D-DE5E-4E1B-A753-EF333751E6E2}.Debug|x64.ActiveCfg = Debug|x64
+		{594E107D-DE5E-4E1B-A753-EF333751E6E2}.Debug|x64.Build.0 = Debug|x64
+		{594E107D-DE5E-4E1B-A753-EF333751E6E2}.Release|Mixed Platforms.ActiveCfg = Release|x64
+		{594E107D-DE5E-4E1B-A753-EF333751E6E2}.Release|Mixed Platforms.Build.0 = Release|x64
+		{594E107D-DE5E-4E1B-A753-EF333751E6E2}.Release|Win32.ActiveCfg = Release|x64
+		{594E107D-DE5E-4E1B-A753-EF333751E6E2}.Release|x64.ActiveCfg = Release|x64
+		{594E107D-DE5E-4E1B-A753-EF333751E6E2}.Release|x64.Build.0 = Release|x64
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

@@ -94,14 +94,12 @@
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClCompile Include="CManageData.cpp" />
-    <ClCompile Include="CPreProcess.cpp" />
     <ClCompile Include="CReconstruction.cpp" />
     <ClCompile Include="CStereoMatching.cpp" />
     <ClCompile Include="main.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="CManageData.h" />
-    <ClInclude Include="CPreProcess.h" />
     <ClInclude Include="CReconstruction.h" />
     <ClInclude Include="CStereoMatching.h" />
     <ClInclude Include="SharedInclude.h" />

@@ -512,7 +512,7 @@ void CStereoMatching::Rematch(cv::Mat image[], cv::Mat mask[], cv::Mat disparity
 	int vec_size = square_(window_size)*3;
 
 	cv::Mat BL, BR;
-	SetBoundary<short>(disparity, mask[0], BL, BR, IsZeroOne);
+	SetBoundary_smooth<short>(disparity, mask[0], BL, BR, IsZeroOne);
 //	m_data->SaveMat(BL,"bl.dat");
 #pragma omp parallel for
 	for (int y=YL; y<=YR; y++)
@@ -950,7 +950,11 @@ void CStereoMatching::SetBoundary(cv::Mat disparity, cv::Mat mask, cv::Mat &boun
 	XR = margin[!IsZeroOne].XR;
 	XL1 = margin[IsZeroOne].XL;
 	XR1 = margin[IsZeroOne].XR;
-	if (YL >= YR || XL >= XR) exit(0);
+	if (YL >= YR || XL >= XR) 
+	{
+		printf("YL(%d)>=YR(%d) || XL(%d)>=XR(%d)\n", YL, YR, XL, XR);
+		exit(0);
+	}
 	//set boundary
 	boundary_L = cv::Mat(disparity.size(), CV_16SC1, cv::Scalar(XL1));
 	boundary_R = cv::Mat(disparity.size(), CV_16SC1, cv::Scalar(XR1));
