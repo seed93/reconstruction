@@ -16,14 +16,13 @@ void CStereoMatching::MatchAllLayer()
 {
 	for (int CamPair=0; CamPair<m_data->m_CampairNum; CamPair++)
 	{
-		printf("processing cam %d and cam %d...\n", m_data->cam[CamPair][0].camID, m_data->cam[CamPair][1].camID);
+		printf("processing pair %d: cam %d and cam %d...\n", CamPair, m_data->cam[CamPair][0].camID, m_data->cam[CamPair][1].camID);
 		Rectify(CamPair, Q);
 		ConstructPyrm(CamPair);
 		cv::Mat disparity[2];
 		for (int i = 0; i<m_data->m_PyrmNum; i++)
 		{
  			MatchOneLayer(disparity, i);
-//			DisparityToCloud<double>(disparity[0], m_data->maskPyrm[i][0], Q, i, true, i);
 		}
 		m_data->cam[CamPair][0].bound = margin[0];
 		m_data->cam[CamPair][1].bound = margin[1];
@@ -93,7 +92,7 @@ void CStereoMatching::MatchOneLayer(cv::Mat disparity[], int Pyrm_depth)
 //  m_data->SaveMat(disparity[0], "disparity50.dat");
 //  m_data->SaveMat(disparity[1], "disparity51.dat");
 // 	DisparityToCloud<short>(disparity[0], mask[0], Q, Pyrm_depth, true, 11+10*Pyrm_depth);
-	int iteration = 20+Pyrm_depth*20;
+	int iteration = 30+Pyrm_depth*30;
 //	clock_t part = clock();
 	DisparityRefine(disparity[0], image, iteration, true);
 	DisparityRefine(disparity[1], image_inv, iteration, false);
@@ -139,6 +138,7 @@ void CStereoMatching::Rectify(int CamPair, cv::Mat &Q)
 	Q.at<double>(3,2) = -Q.at<double>(3,2);
 	cv::Mat rmap[2], img;
 	double scale = double(m_data->m_LowestLevelSize.width) / m_data->m_OriginSize.width * (1<<(m_data->m_PyrmNum-1)); 
+	temp_P02 = current_cam[1].P.at<double>(0,2);
 	for (int j=0; j<2; j++)
 	{
 		current_cam[j].P.rowRange(0,2) *= scale;
@@ -150,17 +150,21 @@ void CStereoMatching::Rectify(int CamPair, cv::Mat &Q)
 			printf("read image %s error\n", current_cam[j].image_name.c_str());
 			return ;
 		}
+		
 //		cv::medianBlur(img,img,5);
 		cv::remap(img, current_cam[j].image, rmap[0], rmap[1], CV_INTER_LINEAR);
+		//cout<<rmap[0].rows<<endl;
+// 		cv::imshow("img", current_cam[j].image);
+// 		cv::waitKey(0);
 //		cv::medianBlur(current_cam[j].image,current_cam[j].image,5);
 		img = cv::imread(current_cam[j].mask_name, CV_LOAD_IMAGE_GRAYSCALE);
 		cv::remap(img, current_cam[j].mask, rmap[0], rmap[1], CV_INTER_LINEAR);
-		cv::Mat element = cv::getStructuringElement( cv::MORPH_ELLIPSE, cv::Size( 3*m_data->m_PyrmNum, 3*m_data->m_PyrmNum ));
+		cv::Mat element = cv::getStructuringElement( cv::MORPH_ELLIPSE, cv::Size( 3*(1<<(m_data->m_PyrmNum-1)), 3*(1<<(m_data->m_PyrmNum-1) )));
 		cv::erode(current_cam[j].mask, current_cam[j].mask, element);
 		if (m_data->isoutput)
 		{
 			char filename[MAX_PATH];
-			sprintf(filename, "%d.jpg", current_cam[j].camID);
+			sprintf(filename, "%d_%d.jpg", CamPair, current_cam[j].camID);
 			cv::imwrite(filename, current_cam[j].image);
 	// 		sprintf(filename, "%d_mask.jpg", current_cam[j].camID);
 	// 		cv::imwrite(filename, current_cam[j].mask);
@@ -198,7 +202,7 @@ void CStereoMatching::LowestLevelInitialMatch(cv::Mat image[], cv::Mat mask[], c
 		for (int x=XL; x<=XR; x++)
 		{
 			// mask
-			if (p[x] != 255)
+			if (p[x] != 255)// || window_ptrL[MatchBlockRadius][XL*3] > 200 || window_ptrL[MatchBlockRadius][XL*3+1] > 200 || window_ptrL[MatchBlockRadius][XL*3] > 200)
 				continue;
 			arma::vec vecL(vec_size), vecR(vec_size);
 			double normL = m_data->WindowToVec(window_ptrL, x-MatchBlockRadius, window_size, vecL);
@@ -263,7 +267,7 @@ void CStereoMatching::HighLevelInitialMatch(cv::Mat image[], cv::Mat mask[], cv:
 		for (int x=XL; x<=XR; x++)
 		{
 			// mask
-			if (p[x] != 255)
+			if (p[x] != 255)// || window_ptrL[MatchBlockRadius][XL*3] > 200 || window_ptrL[MatchBlockRadius][XL*3+1] > 200 || window_ptrL[MatchBlockRadius][XL*3] > 200)
 				continue;
 			int temp2 = int((x+1)/2.0);//@@Ã»¿´¶®MIN(int((x+1)/2.0), XR1>>1)
 			arma::vec vecL(vec_size), vecR(vec_size);
@@ -629,7 +633,7 @@ void CStereoMatching::DisparityRefine(cv::Mat &disparity, cv::Mat image[], int i
 						normR = m_data->WindowToVec(window_ptrR, iMatch+i, 3, vecR);
 						xi[i] = (1-arma::dot(vecL,vecR)/(normL*normR))/2;
 					}
-					int index = xi[0] < xi[1]?0:1;
+					int index = xi[0] >= xi[1];
 					if (xi[index] > xi[2]) index = 2;
 					switch(index)
 					{
@@ -697,36 +701,46 @@ void CStereoMatching::DisparityToCloud(cv::Mat disparity, cv::Mat mask_org, cv::
 	cv::Mat _Q(4, 4, CV_64F, q);
 	Q.convertTo(_Q, CV_64F);
 	_Q.col(3) *= scale;
+// 	if(!IsZeroOne){
+// 		idx = (idx-1)>>1;
+// 		_Q.at<double>(0,3) = -temp_P02*scale;
+// 		_Q.at<double>(3,2) = -_Q.at<double>(3,2);
+// 		_Q.at<double>(3,3) = -_Q.at<double>(3,3);
+// 		cout<<_Q<<endl;
+// 	}
 	double qz = q[2][3], qw = q[3][3];
 	double _Fout[3][1];
 	cv::Mat Fout(3,1,CV_64FC1, _Fout);
 	cv::Mat mask = mask_org.clone();
-// 	cv::Mat element = cv::getStructuringElement( cv::MORPH_ELLIPSE, cv::Size( 100, 100 ));
-// 	cv::erode(mask, mask, element);
-#ifdef IS_PLY
-	char filename[20];
-	int point_count = 0;
-	for( int y = YL; y <= YR; y++ )
-	{
-		T *sptr = disparity.ptr<T>(y);
-		uchar *p = mask.ptr<uchar>(y);
-		for( int x = XL; x <= XR; x++ )
+	int erode_size = ceil(0.02 * mask_org.rows);
+ 	cv::Mat element = cv::getStructuringElement( cv::MORPH_ELLIPSE, cv::Size( erode_size, erode_size ));
+ 	cv::erode(mask, mask, element);
+	FILE* fp;
+	if (m_data->isoutput){
+		char filename[20];
+		int point_count = 0;
+		for( int y = YL; y <= YR; y++ )
 		{
-			if (p[x] != 255)				
-				continue;
-			if (sptr[x] == NOMATCH)				
-				continue;
-			point_count++;
+			T *sptr = disparity.ptr<T>(y);
+			uchar *p = mask.ptr<uchar>(y);
+			for( int x = XL; x <= XR; x++ )
+			{
+				if (p[x] != 255)				
+					continue;
+				if (sptr[x] == NOMATCH)				
+					continue;
+				point_count++;
+			}
 		}
+		sprintf(filename, "cloud%d.ply", idx);
+		fp = fopen(filename, "wb");
+		fprintf(fp, "ply\n");
+		fprintf(fp, "format binary_little_endian 1.0\n");
+		fprintf(fp, "element vertex %d\n", point_count);
+		fprintf(fp, "property float x\nproperty float y\nproperty float z\nproperty uchar blue\nproperty uchar green\nproperty uchar red\n");//
+		fprintf(fp, "end_header\n");
 	}
-	sprintf(filename, "cloud%d.ply", idx);
-	FILE* fp = fopen(filename, "wb");
-	fprintf(fp, "ply\n");
-	fprintf(fp, "format binary_little_endian 1.0\n");
-	fprintf(fp, "element vertex %d\n", point_count);
-	fprintf(fp, "property float x\nproperty float y\nproperty float z\nproperty uchar blue\nproperty uchar green\nproperty uchar red\n");//
-	fprintf(fp, "end_header\n");
-#endif
+
 	for( int y = YL; y <= YR; y++ )
 	{
 		T *sptr = disparity.ptr<T>(y);
@@ -736,7 +750,7 @@ void CStereoMatching::DisparityToCloud(cv::Mat disparity, cv::Mat mask_org, cv::
 		for( int x = XL; x <= XR; x++ )
 		{
 			s += 3;
-			if (p[x] != 255)				
+			if (p[x] != 255)
 				continue;
 			if (sptr[x] == NOMATCH)				
 				continue;
@@ -748,18 +762,14 @@ void CStereoMatching::DisparityToCloud(cv::Mat disparity, cv::Mat mask_org, cv::
 #ifdef IS_PCL
 			m_CloudOptimization->InsertPoint(point);
 #endif
-#ifdef IS_PLY
-			cv::Point3f p = cv::Point3f(point);
-			fwrite(&(p.x), 4, 1, fp);
-			fwrite(&(p.y), 4, 1, fp);
-			fwrite(&(p.z), 4, 1, fp);
-			fwrite(s, 1, 3, fp);
-#endif
+			if (m_data->isoutput){
+				point.convertTo(point, CV_32FC1);
+				fwrite(point.data, sizeof(float), 3, fp);
+				fwrite(s, 1, 3, fp);
+			}
 		}
 	}
-#ifdef IS_PLY
-	fclose(fp);
-#endif
+	if (m_data->isoutput) fclose(fp);
 }
 
 void CStereoMatching::MedianFilter(cv::Mat &disparity, cv::Mat mask, int iteration, bool IsZeroOne)
@@ -826,7 +836,10 @@ void CStereoMatching::SetBoundary_smooth(cv::Mat disparity, cv::Mat mask, cv::Ma
 	XR = margin[!IsZeroOne].XR;
 	XL1 = margin[IsZeroOne].XL;
 	XR1 = margin[IsZeroOne].XR;
-	if (YL >= YR || XL >= XR) exit(0);
+	if (YL >= YR || XL >= XR) {
+		printf("YL(%d)>=YR(%d) || XL(%d)>=XR(%d)\n", YL, YR, XL, XR);
+		exit(0);
+	}
 	//set boundary
 	boundary_L = cv::Mat(disparity.size(), CV_16SC1, cv::Scalar(-10000));
 	boundary_R = cv::Mat(disparity.size(), CV_16SC1, cv::Scalar(10000));

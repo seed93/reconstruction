@@ -46,6 +46,7 @@ public:
 	void Init(CManageData * data, CCloudOptimization * CloudOptimization, int radii = 2, double ws = 0.5, int disparity_offset = 2);						
 	void MatchAllLayer();
 private:
+	double temp_P02;
 	void MatchOneLayer(cv::Mat disparity[], int Pyrm_depth);
 	void Rectify(int CamPair, cv::Mat &Q);		// first rectify
 	void LowestLevelInitialMatch(cv::Mat image[], cv::Mat mask[], cv::Mat &disparity, bool IsZeroOne);

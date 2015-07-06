@@ -31,9 +31,9 @@ bool CManageData::Init(cv::FileStorage fs)
 	fs["LowestLevelWidth"]>>LowestLevelWidth;
 	fs["LowestLevelHeight"]>>LowestLevelHeight;
 	m_LowestLevelSize = cv::Size(LowestLevelWidth, LowestLevelHeight);
-	string camID;
+	cv::Mat camID;
 	fs["camID"]>>camID;
-	m_CampairNum = ((int)camID.length()+1)/3;
+	m_CampairNum = camID.rows;
 	cam.resize(m_CampairNum);
 
 	vector<string> imagelist, masklist;
@@ -47,7 +47,7 @@ bool CManageData::Init(cv::FileStorage fs)
 		cam[i].resize(2);
 		for (int k=0; k<2; k++)
 		{
-			cam[i][k].camID = camID[i*3+k]-'0';
+			cam[i][k].camID = camID.at<uchar>(i,k);
 			cam[i][k].image_name = m_FilePath+imagelist[cam[i][k].camID];
 			cam[i][k].mask_name = m_FilePath+masklist[cam[i][k].camID];
 			string currentID = to_string((_Longlong)cam[i][k].camID);

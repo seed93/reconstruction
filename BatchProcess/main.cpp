@@ -11,8 +11,8 @@
 #endif
 
 using namespace std;
-int sn[] = {13293115, 13293116, 13502663, 13502667, 13502670, 13502673, 13502680, 13502683, 13502686, 13502693};
-#define EXPRESSION_NUM 24
+//int sn[] = {13293115, 13293116, 13502663, 13502667, 13502670, 13502673, 13502680, 13502683, 13502686, 13502693};
+#define EXPRESSION_NUM 2
 #define CAMERA_NUM 10
 
 int main(int Argc, char ** Argv)
@@ -27,6 +27,13 @@ int main(int Argc, char ** Argv)
 		printf("unable to open file %s\n", config_file);
 		return -1;
 	}
+	uchar campair_ptr[8] = 
+	{0, 1,
+	2, 3,
+	4, 5, 
+	7, 6};
+	cv::Mat campair(4, 2, CV_8U);
+	campair.data = campair_ptr;
 	while (!feof(fp))
 	{
 		char input_path[512], output_path[512];
@@ -50,19 +57,19 @@ int main(int Argc, char ** Argv)
 			fs<<"isoutput"<<0;
 			fs<<"camera_calib_name"<<"calib_camera.yml";
 			fs<<"PyrmNum"<<4;
-			fs<<"LowestLevelWidth"<<90;
-			fs<<"LowestLevelHeight"<<120;
+			fs<<"LowestLevelWidth"<<160;
+			fs<<"LowestLevelHeight"<<240;
 			vector<string> imagelist(CAMERA_NUM),masklist(CAMERA_NUM);
 			for (int j=0; j<CAMERA_NUM; j++)
 			{
 				char buffer1[512];
-				sprintf(buffer1, "%d_%d_0.jpg", i+1, sn[j]);
+				sprintf(buffer1, "%.4d_Cam%d.jpg", i+1, j);
 				imagelist[j] = buffer1;
 				masklist[j] = "mask\\" + imagelist[j];
 			}
 			fs<<"imagelist"<<imagelist;
 			fs<<"masklist"<<masklist;
-			fs<<"camID"<<"14,93,68,25,70";
+			fs<<"camID"<<campair;
 			fs.release();
 			sprintf(cmd, "reconstruction config.yml");
 			system(cmd);
