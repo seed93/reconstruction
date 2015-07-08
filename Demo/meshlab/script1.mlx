@@ -1,0 +1,15 @@
+<!DOCTYPE FilterScript>
+<FilterScript>
+ <filter name="Surface Reconstruction: Poisson">
+  <Param description="Octree Depth" type="RichInt" tooltip="Set the depth of the Octree used for extracting the final surface. Suggested range 5..10. Higher numbers mean higher precision in the reconstruction but also higher processing times. Be patient.&#xa;" value="10" name="OctDepth"/>
+  <Param description="Solver Divide" type="RichInt" tooltip="This integer argument specifies the depth at which a block Gauss-Seidel solver is used to solve the Laplacian equation.&#xa;Using this parameter helps reduce the memory overhead at the cost of a small increase in reconstruction time. &#xa;In practice, the authors have found that for reconstructions of depth 9 or higher a subdivide depth of 7 or 8 can reduce the memory usage.&#xa;The default value is 8.&#xa;" value="10" name="SolverDivide"/>
+  <Param description="Samples per Node" type="RichFloat" tooltip="This floating point value specifies the minimum number of sample points that should fall within an octree node as the octree&#xa;construction is adapted to sampling density. For noise-free samples, small values in the range [1.0 - 5.0] can be used.&#xa;For more noisy samples, larger values in the range [15.0 - 20.0] may be needed to provide a smoother, noise-reduced, reconstruction.&#xa;The default value is 1.0." value="3" name="SamplesPerNode"/>
+  <Param description="Surface offsetting" type="RichFloat" tooltip="This floating point value specifies a correction value for the isosurface threshold that is chosen.&#xa;Values &lt; 1 means internal offsetting, >1 external offsetting.Good values are in the range 0.5 .. 2.&#xa;The default value is 1.0 (no offsetting)." value="1" name="Offset"/>
+ </filter>
+ <filter name="Laplacian Smooth">
+  <Param description="Smoothing steps" type="RichInt" tooltip="The number of times that the whole algorithm (normal smoothing + vertex fitting) is iterated." value="5" name="stepSmoothNum"/>
+  <Param description="1D Boundary Smoothing" type="RichBool" tooltip="If true the boundary edges are smoothed only by themselves (e.g. the polyline forming the boundary of the mesh is independently smoothed). Can reduce the shrinking on the border but can have strange effects on very small boundaries." value="true" name="Boundary"/>
+  <Param description="Cotangent weighting" type="RichBool" tooltip="If true the cotangente weighting scheme is computed for the averaging of the position. Otherwise (false) the simpler umbrella scheme (1 if the edge is present) is used." value="true" name="cotangentWeight"/>
+  <Param description="Affect only selected faces" type="RichBool" tooltip="If checked the filter is performed only on the selected faces" value="false" name="Selected"/>
+ </filter>
+</FilterScript>

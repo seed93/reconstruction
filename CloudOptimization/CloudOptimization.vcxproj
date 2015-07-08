@@ -96,22 +96,23 @@
       <FunctionLevelLinking>true</FunctionLevelLinking>
       <IntrinsicFunctions>true</IntrinsicFunctions>
       <PreprocessorDefinitions>WIN32;NDEBUG;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
-      <AdditionalIncludeDirectories>..\..\PCL\3rdParty\VTK\include\vtk-5.8;..\..\PCL\include\;..\..\PCL\3rdParty\Eigen\include;..\..\PCL\3rdParty\Boost\include;..\..\PCL\3rdParty\FLANN\include;..\include</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>..\..\PCL_1_6_0\include\;..\..\PCL_1_6_0\3rdParty\Eigen\include;..\..\PCL_1_6_0\3rdParty\Boost\include;..\..\PCL_1_6_0\3rdParty\FLANN\include;..\include</AdditionalIncludeDirectories>
       <MultiProcessorCompilation>false</MultiProcessorCompilation>
       <OpenMPSupport>true</OpenMPSupport>
       <RuntimeLibrary>MultiThreaded</RuntimeLibrary>
       <AdditionalOptions>-Zm238 %(AdditionalOptions)</AdditionalOptions>
+      <FavorSizeOrSpeed>Speed</FavorSizeOrSpeed>
     </ClCompile>
     <Link>
       <SubSystem>Console</SubSystem>
       <GenerateDebugInformation>true</GenerateDebugInformation>
       <EnableCOMDATFolding>false</EnableCOMDATFolding>
       <OptimizeReferences>false</OptimizeReferences>
-      <AdditionalLibraryDirectories>../../PCL/3rdParty/Boost/lib;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
+      <AdditionalLibraryDirectories>../../PCL_1_6_0/3rdParty/Boost/lib;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
       <AdditionalDependencies>kernel32.lib;user32.lib;gdi32.lib;winspool.lib;comdlg32.lib;advapi32.lib;shell32.lib;ole32.lib;oleaut32.lib;uuid.lib;odbc32.lib;odbccp32.lib;%(AdditionalDependencies)</AdditionalDependencies>
       <ModuleDefinitionFile>
       </ModuleDefinitionFile>
-      <OutputFile>$(OutDir)../dlls/$(Configuration)/$(TargetName)$(TargetExt)</OutputFile>
+      <OutputFile>$(OutDir)../Demo/$(TargetName)$(TargetExt)</OutputFile>
       <IgnoreSpecificDefaultLibraries>MSVCRT.lib</IgnoreSpecificDefaultLibraries>
       <LargeAddressAware>true</LargeAddressAware>
       <LinkTimeCodeGeneration>UseLinkTimeCodeGeneration</LinkTimeCodeGeneration>

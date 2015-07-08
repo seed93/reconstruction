@@ -1,11 +1,10 @@
 #common files
-*.jpg
 *.svn-base
 reconstruction/x64/
 CloudOptimization/x64/
 Kinect2Cloud/x64/
 BatchProcess/x64/
-dlls/
+lib/opencv/
 .svn/
 
 # Compiled Object files
@@ -37,7 +36,7 @@ dlls/
 #*.lib
 
 # Executables
-*.exe
+#*.exe
 *.out
 *.app
 

@@ -1,0 +1,32 @@
+%YAML:1.0
+filepath: "INPUT/ETH/"
+outfilename: "INPUT/ETH/ETH_model.ply"
+isoutput: 0
+camera_calib_name: "calib_camera.yml"
+PyrmNum: 5
+LowestLevelWidth: 135
+LowestLevelHeight: 90
+imagelist:
+   - "0.jpg"
+   - "1.jpg"
+   - "2.jpg"
+   - "3.jpg"
+   - "4.jpg"
+   - "5.jpg"
+   - "6.jpg"
+masklist:
+   - "mask/0_mask.jpg"
+   - "mask/1_mask.jpg"
+   - "mask/2_mask.jpg"
+   - "mask/3_mask.jpg"
+   - "mask/4_mask.jpg"
+   - "mask/5_mask.jpg"
+   - "mask/6_mask.jpg"
+camID: !!opencv-matrix
+   rows: 4
+   cols: 2
+   dt: u
+   data: [ 0, 1,
+           5, 4,
+           4, 6,
+           2, 3]

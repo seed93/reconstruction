@@ -16,7 +16,7 @@ void CStereoMatching::MatchAllLayer()
 {
 	for (int CamPair=0; CamPair<m_data->m_CampairNum; CamPair++)
 	{
-		printf("processing pair %d: cam %d and cam %d...\n", CamPair, m_data->cam[CamPair][0].camID, m_data->cam[CamPair][1].camID);
+		printf("processing pair %d: cam %d and cam %d...\n", CamPair+1, m_data->cam[CamPair][0].camID, m_data->cam[CamPair][1].camID);
 		Rectify(CamPair, Q);
 		ConstructPyrm(CamPair);
 		cv::Mat disparity[2];
@@ -138,7 +138,6 @@ void CStereoMatching::Rectify(int CamPair, cv::Mat &Q)
 	Q.at<double>(3,2) = -Q.at<double>(3,2);
 	cv::Mat rmap[2], img;
 	double scale = double(m_data->m_LowestLevelSize.width) / m_data->m_OriginSize.width * (1<<(m_data->m_PyrmNum-1)); 
-	temp_P02 = current_cam[1].P.at<double>(0,2);
 	for (int j=0; j<2; j++)
 	{
 		current_cam[j].P.rowRange(0,2) *= scale;
@@ -153,10 +152,6 @@ void CStereoMatching::Rectify(int CamPair, cv::Mat &Q)
 		
 //		cv::medianBlur(img,img,5);
 		cv::remap(img, current_cam[j].image, rmap[0], rmap[1], CV_INTER_LINEAR);
-		//cout<<rmap[0].rows<<endl;
-// 		cv::imshow("img", current_cam[j].image);
-// 		cv::waitKey(0);
-//		cv::medianBlur(current_cam[j].image,current_cam[j].image,5);
 		img = cv::imread(current_cam[j].mask_name, CV_LOAD_IMAGE_GRAYSCALE);
 		cv::remap(img, current_cam[j].mask, rmap[0], rmap[1], CV_INTER_LINEAR);
 		cv::Mat element = cv::getStructuringElement( cv::MORPH_ELLIPSE, cv::Size( 3*(1<<(m_data->m_PyrmNum-1)), 3*(1<<(m_data->m_PyrmNum-1) )));
@@ -701,18 +696,11 @@ void CStereoMatching::DisparityToCloud(cv::Mat disparity, cv::Mat mask_org, cv::
 	cv::Mat _Q(4, 4, CV_64F, q);
 	Q.convertTo(_Q, CV_64F);
 	_Q.col(3) *= scale;
-// 	if(!IsZeroOne){
-// 		idx = (idx-1)>>1;
-// 		_Q.at<double>(0,3) = -temp_P02*scale;
-// 		_Q.at<double>(3,2) = -_Q.at<double>(3,2);
-// 		_Q.at<double>(3,3) = -_Q.at<double>(3,3);
-// 		cout<<_Q<<endl;
-// 	}
 	double qz = q[2][3], qw = q[3][3];
 	double _Fout[3][1];
 	cv::Mat Fout(3,1,CV_64FC1, _Fout);
 	cv::Mat mask = mask_org.clone();
-	int erode_size = ceil(0.02 * mask_org.rows);
+	int erode_size = (int)ceil(0.02 * mask_org.rows);
  	cv::Mat element = cv::getStructuringElement( cv::MORPH_ELLIPSE, cv::Size( erode_size, erode_size ));
  	cv::erode(mask, mask, element);
 	FILE* fp;
