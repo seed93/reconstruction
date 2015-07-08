@@ -4,7 +4,7 @@ Reconstruction是一个用于多视角三维重建的项目，该项目参考[Beeler10](https://graph
 
 # 项目依赖
 
-- [PCL](http://pointclouds.org/) 静态库。由于库文件过于庞大，未包含在项目中，需要额外下载本人已编译好的[静态库]()，有精简版（仅包含该项目所需）和完整版，解压至项目同一级目录，VS2010使用1.6.0版本，VS2015使用1.7.2版本。请用户自行编译，可参考本人[博客](http://ld99.top/2015/07/07/%E9%A1%B9%E7%9B%AE%E4%BB%8EVS2010%E8%BF%81%E7%A7%BB%E5%88%B0VS2015/#%E9%9D%99%E6%80%81%E7%BC%96%E8%AF%91_PCL)。
+- [PCL](http://pointclouds.org/) 静态库。由于库文件过于庞大，未包含在项目中，需要额外下载本人已编译好的[静态库](http://pan.baidu.com/s/1bnyfvLt)，有精简版（仅包含该项目所需）和完整版，解压至项目同一级目录，VS2010使用1.6.0版本，VS2015使用1.7.2版本。请用户自行编译，可参考本人[博客](http://ld99.top/2015/07/07/%E9%A1%B9%E7%9B%AE%E4%BB%8EVS2010%E8%BF%81%E7%A7%BB%E5%88%B0VS2015/#%E9%9D%99%E6%80%81%E7%BC%96%E8%AF%91_PCL)。
 - OpenCV静态库，已包含在项目中，请在`lib\`目录下解压**opencv.7z**
 - [Armadillo](http://arma.sourceforge.net/)，已包含在项目中
 - [MeshLab](http://meshlab.sourceforge.net/)，请用户自行下载后解压到`Demo\meshlab\`目录下
