@@ -1,0 +1,35 @@
+%YAML:1.0
+filepath: "INPUT\\myself\\"
+outfilename: "INPUT\\myself\\model.ply"
+isoutput: 0
+camera_calib_name: "calib_camera.yml"
+PyrmNum: 4
+LowestLevelWidth: 160
+LowestLevelHeight: 240
+imagelist:
+   - "Cam0__014.JPG"
+   - "Cam1__014.JPG"
+   - "Cam2__014.JPG"
+   - "Cam3__014.JPG"
+   - "Cam4__014.JPG"
+   - "Cam5__014.JPG"
+   - "Cam6__014.JPG"
+   - "Cam7__014.JPG"
+   - "Cam8__014.JPG"
+   - "Cam9__014.JPG"
+masklist:
+   - "mask\\Cam0__014.JPG"
+   - "mask\\Cam1__014.JPG"
+   - "mask\\Cam2__014.JPG"
+   - "mask\\Cam3__014.JPG"
+   - "mask\\Cam4__014.JPG"
+   - "mask\\Cam5__014.JPG"
+   - "mask\\Cam6__014.JPG"
+   - "mask\\Cam7__014.JPG"
+   - "mask\\Cam8__014.JPG"
+   - "mask\\Cam9__014.JPG"
+camID: !!opencv-matrix
+   rows: 5
+   cols: 2
+   dt: u
+   data: [ 0, 1, 2, 3, 4, 5, 7, 6, 9, 8 ]

@@ -1,6 +1,8 @@
 ﻿
-Microsoft Visual Studio Solution File, Format Version 11.00
-# Visual Studio 2010
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio 14
+VisualStudioVersion = 14.0.22823.1
+MinimumVisualStudioVersion = 10.0.40219.1
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "reconstruction", "reconstruction\reconstruction.vcxproj", "{4D29FF33-5067-4DAF-A3D9-FB7F369D8DCE}"
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "CloudOptimization", "CloudOptimization\CloudOptimization.vcxproj", "{4B39FCBD-A7C4-46D2-9D85-E45E7C291AA5}"

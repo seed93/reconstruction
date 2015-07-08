@@ -13,32 +13,32 @@
 #include <pcl/filters/extract_indices.h>
 #include <pcl/segmentation/sac_segmentation.h>
 #include <pcl/segmentation/extract_clusters.h>
+#include <windows.h>
 
-
-#include <opencv/eigen.hpp>
+#include <opencv2/core/eigen.hpp>
 #include "../reconstruction/CManageData.h"
 
 
 #ifdef _DEBUG
-#pragma comment (lib, "../../PCL/lib/pcl_common_debug.lib")
-#pragma comment (lib, "../../PCL/lib/pcl_kdtree_debug.lib")
-#pragma comment (lib, "../../PCL/lib/pcl_io_debug.lib")
-#pragma comment (lib, "../../PCL/lib/pcl_io_ply_debug.lib")
-#pragma comment (lib, "../../PCL/lib/pcl_surface_debug.lib")
-#pragma comment (lib, "../../PCL/lib/pcl_features_debug.lib")
-#pragma comment (lib, "../../PCL/lib/pcl_search_debug.lib")
-#pragma comment (lib, "../../PCL/lib/pcl_filters_debug.lib")
-#pragma comment (lib, "../../PCL/lib/pcl_segmentation_debug.lib")
+#pragma comment (lib, "../../PCL_1_7_2/lib/pcl_common_debug.lib")
+#pragma comment (lib, "../../PCL_1_7_2/lib/pcl_kdtree_debug.lib")
+#pragma comment (lib, "../../PCL_1_7_2/lib/pcl_io_debug.lib")
+#pragma comment (lib, "../../PCL_1_7_2/lib/pcl_io_ply_debug.lib")
+#pragma comment (lib, "../../PCL_1_7_2/lib/pcl_surface_debug.lib")
+#pragma comment (lib, "../../PCL_1_7_2/lib/pcl_features_debug.lib")
+#pragma comment (lib, "../../PCL_1_7_2/lib/pcl_search_debug.lib")
+#pragma comment (lib, "../../PCL_1_7_2/lib/pcl_filters_debug.lib")
+#pragma comment (lib, "../../PCL_1_7_2/lib/pcl_segmentation_debug.lib")
 #else
-#pragma comment (lib, "../../PCL/lib/pcl_common_release.lib")
-#pragma comment (lib, "../../PCL/lib/pcl_kdtree_release.lib")
-#pragma comment (lib, "../../PCL/lib/pcl_io_release.lib")
-#pragma comment (lib, "../../PCL/lib/pcl_io_ply_release.lib")
-#pragma comment (lib, "../../PCL/lib/pcl_surface_release.lib")
-#pragma comment (lib, "../../PCL/lib/pcl_features_release.lib")
-#pragma comment (lib, "../../PCL/lib/pcl_search_release.lib")
-#pragma comment (lib, "../../PCL/lib/pcl_filters_release.lib")
-#pragma comment (lib, "../../PCL/lib/pcl_segmentation_release.lib")
+#pragma comment (lib, "../../PCL_1_7_2/lib/pcl_common_release.lib")
+#pragma comment (lib, "../../PCL_1_7_2/lib/pcl_kdtree_release.lib")
+#pragma comment (lib, "../../PCL_1_7_2/lib/pcl_io_release.lib")
+#pragma comment (lib, "../../PCL_1_7_2/lib/pcl_io_ply_release.lib")
+#pragma comment (lib, "../../PCL_1_7_2/lib/pcl_surface_release.lib")
+#pragma comment (lib, "../../PCL_1_7_2/lib/pcl_features_release.lib")
+#pragma comment (lib, "../../PCL_1_7_2/lib/pcl_search_release.lib")
+#pragma comment (lib, "../../PCL_1_7_2/lib/pcl_filters_release.lib")
+#pragma comment (lib, "../../PCL_1_7_2/lib/pcl_segmentation_release.lib")
 #endif
 
 

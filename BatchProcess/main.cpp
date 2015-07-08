@@ -1,13 +1,17 @@
 #include <stdio.h>
 //#include <string>
-#include <opencv/core.hpp>
+#include <opencv2/core.hpp>
 
 #ifdef _DEBUG
-#pragma comment (lib,"../lib/opencv/opencv_core245d.lib")
+#pragma comment (lib,"../lib/opencv/opencv_core300d.lib")
 #pragma comment (lib,"../lib/opencv/zlibd.lib")
+#pragma comment (lib,"../lib/opencv/ippicvmt.lib")
+#pragma comment (lib,"../lib/opencv/opencv_hal300d.lib")
 #else
-#pragma comment (lib,"../lib/opencv/opencv_core245.lib")
+#pragma comment (lib,"../lib/opencv/opencv_core300.lib")
 #pragma comment (lib,"../lib/opencv/zlib.lib")
+#pragma comment (lib,"../lib/opencv/ippicvmt.lib")
+#pragma comment (lib,"../lib/opencv/opencv_hal300.lib")
 #endif
 
 using namespace std;

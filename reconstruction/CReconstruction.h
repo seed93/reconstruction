@@ -17,8 +17,6 @@ public:
 	CCloudOptimization m_CloudOptimization;
 	string filepath;
 	bool Init(char *configfile);		// Initial function, must be called after declaim
-private:
-	
 };
 
 #endif

@@ -1,0 +1,15 @@
+<!DOCTYPE FilterScript>
+<FilterScript>
+ <filter name="Remove Isolated pieces (wrt Diameter)">
+  <Param value="42.1253" name="MinComponentDiag" description="Enter max diameter of isolated pieces" min="0" max="421.253" tooltip="Delete all the connected components (floating pieces) with a diameter smaller than the specified one" type="RichAbsPerc"/>
+ </filter>
+ <filter name="Remove Duplicate Faces"/>
+ <filter name="Remove Zero Area Faces"/>
+ <filter name="Remove Faces from Non Manifold Edges"/>
+ <filter name="Close Holes">
+  <Param value="30" name="MaxHoleSize" description="Max size to be closed " tooltip="The size is expressed as number of edges composing the hole boundary" type="RichInt"/>
+  <Param value="true" name="Selected" description="Close holes with selected faces" tooltip="Only the holes with at least one of the boundary faces selected are closed" type="RichBool"/>
+  <Param value="true" name="NewFaceSelected" description="Select the newly created faces" tooltip="After closing a hole the faces that have been created are left selected. Any previous selection is lost. Useful for example for smoothing the newly created holes." type="RichBool"/>
+  <Param value="true" name="SelfIntersection" description="Prevent creation of selfIntersecting faces" tooltip="When closing an holes it tries to prevent the creation of faces that intersect faces adjacent to the boundary of the hole. It is an heuristic, non intersetcting hole filling can be NP-complete." type="RichBool"/>
+ </filter>
+</FilterScript>

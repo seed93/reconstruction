@@ -7,11 +7,12 @@ pcl::PointCloud<pcl::PointXYZ>::Ptr cloud_in(new pcl::PointCloud<pcl::PointXYZ>)
 vector<Eigen::Vector3f> CamCenter;
 vector<vector<Eigen::Matrix3f>> R;
 vector<vector<Eigen::Vector3f>> T;
-cv::Mat current_img;
+uchar * current_img;
 int current_img_width, current_img_height;
 Eigen::Matrix3f current_R;
 Eigen::Vector3f current_T;
 void texture_color(float x, float y, float z, uchar rgb[]);
+void safe_process(char * cmdLine, DWORD max_time);
 class _declspec(dllexport) CCloudOptimization
 {
 public:
@@ -30,6 +31,11 @@ private:
 };
 
 inline void reverse(float &x) { x = -x;}
+inline void reverse_normal(pcl::PointNormal &input) {
+	reverse(input.normal_x);
+	reverse(input.normal_y);
+	reverse(input.normal_z);
+}
 
 void CCloudOptimization::Init(int sor_meank, double sor_stdThres, int outrem_neighbor, double outrem_radius, double mls_radius, CManageData *ImageData, bool isdelete_)
 {
@@ -49,7 +55,6 @@ void CCloudOptimization::Init(int sor_meank, double sor_stdThres, int outrem_nei
 	sprintf(cmd, "mkdir tmp");
 	system(cmd);
 }
-
 
 void CCloudOptimization::InsertPoint(cv::Mat p)
 {
@@ -80,6 +85,7 @@ void CCloudOptimization::filter(int idx)
 	sor.setStddevMulThresh (m_sor_stdThres);//face 0.3
 	sor.filter (*cloud_filtered);
 	printf("Initial points: %d\n",cloud_in->points.size());
+	
 	/*
 	pcl::RadiusOutlierRemoval<pcl::PointXYZ> outrem;
 	// build the filter
@@ -88,7 +94,7 @@ void CCloudOptimization::filter(int idx)
 	outrem.setMinNeighborsInRadius (m_outrem_neighbor);
 	// apply filter
 	outrem.filter (*cloud_filtered);*/
-
+	
 	std::cerr << "Cloud after filtering: " << std::endl;
 	std::cerr << *cloud_filtered;
 
@@ -104,71 +110,48 @@ void CCloudOptimization::filter(int idx)
 	pcl::PointCloud<pcl::PointNormal>::Ptr cloud_normal (new pcl::PointCloud<pcl::PointNormal>);
 	pcl::concatenateFields(*current_cloud_normals, *cloud_filtered, *cloud_normal);
 
+	
 #pragma omp parallel for
 	for (int i=0; i<cloud_normal->size(); i++)
 	{
 		Eigen::Vector3f current_camdir = CamCenter[idx] - cloud_normal->points[i].getVector3fMap();
 		Eigen::Vector3f current_direction_normed = cloud_normal->points[i].getNormalVector3fMap();
 		if (current_direction_normed.dot(current_camdir) < 0)
-		{
-			reverse(cloud_normal->points[i].normal_x);
-			reverse(cloud_normal->points[i].normal_y);
-			reverse(cloud_normal->points[i].normal_z);
-		}	
+			reverse_normal(cloud_normal->points[i]);
 	}
-
-
+	
 	*cloud_normals += *cloud_normal;
  	char name[MAX_PATH];
  	pcl::io::savePLYFileBinary("tmp\\cloud_filter.ply", *cloud_normal);
 	system("mesh.bat");
 	current_img_width = m_ImageData->cam[idx][0].image.cols;
 	current_img_height = m_ImageData->cam[idx][0].image.rows;
+	
 	MyPlyIo myPlyIo(texture_color, 'b');
 	sprintf(name, "tmp\\color_%d_0.ply", idx);
-	current_img = m_ImageData->cam[idx][0].image;
+	current_img = m_ImageData->cam[idx][0].image.data;
 	current_R = R[idx][0];
 	current_T = T[idx][0];
+	
 	if (myPlyIo.ReadAndWrite("tmp\\mesh_trimmer.ply", name))
 		std::cout << "fail\n";
 	sprintf(name, "tmp\\color_%d_1.ply", idx);
-	current_img = m_ImageData->cam[idx][1].image;
+	current_img = m_ImageData->cam[idx][1].image.data;
 	current_R = R[idx][1];
 	current_T = T[idx][1];
 	if (myPlyIo.ReadAndWrite("tmp\\mesh_trimmer.ply", name))
 		std::cout << "fail\n";
+
 	cloud_in->clear();
+
 }
 
 void CCloudOptimization::run()
 {
-// 	Eigen::Vector4f centroid;
-// 	pcl::compute3DCentroid (*cloud,centroid);
-// 	Eigen::Vector3f m_ObjectCenter = Eigen::Vector3f(centroid[0]-50, centroid[1], centroid[2]);
-	
-// 	for (int i=0; i<m_ImageData->m_CampairNum; i++)
-// 	{
-// 		boost::shared_ptr<std::vector<int> > indicesptr_temp (new std::vector<int> (cam_indices[i]));
-// 		pcl::ExtractIndices<pcl::PointXYZ> extract;
-// 		extract.setInputCloud (cloud);
-// 		extract.setIndices (indicesptr_temp);
-// 		extract.setNegative (false);
-// 		extract.filter (*cloud_in);
-// 		char name[100];
-// 		sprintf(name, "cloud_filter%d.ply", i+10);
-// 		pcl::io::savePLYFileBinary(name, *cloud_in);
-// 	}
-
 	boost::shared_ptr<std::vector<int> > indicesptr (new vector<int> );
 	if (isdelete)
 	{	
 		//TODO：首先计算法向，假设法向正确，用法向和点到相机方向的夹角来判断所属相机
-//		pcl::io::savePLYFileBinary("tmp\\bigcloud_normal.ply", *cloud_normals);
-// 		pcl::PLYWriter w;
-// 		w.write<pcl::PointNormal>("tmp\\bigcloud_normal.ply", *cloud_normals, false, false);
-// 		system("gen_normals.bat");
-// 		pcl::io::loadPLYFile("tmp\\bigcloud.ply", *cloud_normals);
-// 		cout<<"read succeed"<<endl;
 		std::cerr << "Cloud before deleting: " << std::endl;
 		std::cerr << *cloud_normals;
 		vector<pcl::PointNormal,Eigen::aligned_allocator<pcl::PointNormal>> &points = cloud_normals->points;
@@ -390,11 +373,7 @@ void CCloudOptimization::run()
 		{
 			if (cloud_ms_normals->points[i].getNormalVector3fMap().dot(
 				cloud_normals->points[(*indicesptr)[idx_in_orig[i]]].getNormalVector3fMap()) < 0)
-			{
-				reverse(cloud_ms_normals->points[i].normal_x);
-				reverse(cloud_ms_normals->points[i].normal_y);
-				reverse(cloud_ms_normals->points[i].normal_z);
-			}
+				reverse_normal(cloud_ms_normals->points[i]);
 		}
 	}else{
 #pragma omp parallel for
@@ -402,45 +381,10 @@ void CCloudOptimization::run()
 		{
 			if (cloud_ms_normals->points[i].getNormalVector3fMap().dot(
 				cloud_normals->points[idx_in_orig[i]].getNormalVector3fMap()) < 0)
-			{
-				reverse(cloud_ms_normals->points[i].normal_x);
-				reverse(cloud_ms_normals->points[i].normal_y);
-				reverse(cloud_ms_normals->points[i].normal_z);
-			}
+				reverse_normal(cloud_ms_normals->points[i]);
 		}
 	}
-
-/*
-	Eigen::Vector4f centroid;
-	pcl::compute3DCentroid (*cloud_ms_normals,centroid);
-	Eigen::Vector3f m_ObjectCenter = Eigen::Vector3f(centroid[0]-50, centroid[1], centroid[2]);
-
-#pragma omp parallel for
-	for (int i=0; i<cloud_ms_normals->size(); i++)
-	{
-		Eigen::Vector3f current_point = cloud_ms_normals->points[i].getVector3fMap();
-		Eigen::Vector3f current_direction_normed = m_ObjectCenter-current_point;
-		current_direction_normed /= current_direction_normed.norm();
-		float min_value = FLT_MAX;
-		Eigen::Vector3f best_camdir;
-		for (int j=0; j<m_ImageData->m_CameraNum; j++)
-		{
-			Eigen::Vector3f current_camdir = CamCenter[j]-current_point;
-			float current_value = current_direction_normed.dot(current_camdir)/current_camdir.norm();
-			if (current_value < min_value)
-			{
-				min_value = current_value;
-				best_camdir = current_camdir;
-			}
-		}
-		if (cloud_ms_normals->points[i].getNormalVector3fMap().dot(best_camdir) < 0)
-		{
-			reverse(cloud_ms_normals->points[i].normal_x);
-			reverse(cloud_ms_normals->points[i].normal_y);
-			reverse(cloud_ms_normals->points[i].normal_z);
-		}	
-	}
-	*/
+	cloud_normals->clear();
 
 	pcl::io::savePLYFileBinary("tmp\\bigcloud.ply", *cloud_ms_normals);
 //	system("gen_normals.bat");
@@ -450,7 +394,7 @@ void CCloudOptimization::run()
 	//texture mapping
 	char cmd[MAX_PATH];
 	sprintf(cmd, "TextureStitcher.exe --in tmp\\bigmesh.ply --scans scans.txt --out %s --useKD --verbose", m_ImageData->outfilename.c_str());
-	system(cmd);
+	safe_process(cmd, 2e4);
 }
 
 void texture_color(float x, float y, float z, uchar rgb[])
@@ -470,8 +414,27 @@ void texture_color(float x, float y, float z, uchar rgb[])
 		rgb[2] = 127;
 		return ;
 	}
-	current_x *= 3;
-	rgb[2] = current_img.ptr<uchar>(current_y)[current_x];
-	rgb[1] = current_img.ptr<uchar>(current_y)[current_x+1];
-	rgb[0] = current_img.ptr<uchar>(current_y)[current_x+2];
+	uchar *base_ptr = current_img + (current_img_width * current_y + current_x) * 3;
+	rgb[2] = base_ptr[0];
+	rgb[1] = base_ptr[1];
+	rgb[0] = base_ptr[2];
+}
+
+void safe_process(char * cmdLine, DWORD max_time) {
+	TCHAR szCmdLine[MAX_PATH];
+#ifdef UNICODE
+	MultiByteToWideChar(CP_ACP, 0, cmdLine, -1, szCmdLine, MAX_PATH);
+#else
+	strcpy(szCmdLine, cmdLine);
+#endif
+	STARTUPINFO si;
+	PROCESS_INFORMATION pi;
+	ZeroMemory(&si, sizeof(si));
+	si.cb = sizeof(si);
+	ZeroMemory(&pi, sizeof(pi));
+	if (CreateProcess(NULL, szCmdLine, 0, 0, FALSE, 0, 0, 0, &si, &pi)) {
+		CloseHandle(pi.hThread);
+		WaitForSingleObject(pi.hProcess, max_time);
+		CloseHandle(pi.hProcess);
+	}
 }

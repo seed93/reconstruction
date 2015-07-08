@@ -14,7 +14,7 @@ void CKinect2Cloud::run()
 {
 	vector<int> kinect_sn;
 	fs["kinect_sn"]>>kinect_sn;
-	string kinect_infoname;
+	String kinect_infoname;
 	fs["kinect_info"]>>kinect_infoname;
 	FileStorage fscalib(kinect_infoname, FileStorage::READ);
 	if (fscalib.isOpened() == false)
@@ -26,10 +26,10 @@ void CKinect2Cloud::run()
 	fs["boundingbox"]>>bbox;
 	for (int i=0; i<kinect_sn.size(); i++)
 	{
-		string currentID = to_string((_Longlong)kinect_sn[i]);
+		String currentID = to_string((_Longlong)kinect_sn[i]);
 		vector<float> param;
 		fscalib["DepthCameraIntrinsic-"+currentID]>>param;
-		vector<string> filelist, bklist, outlist;
+		vector<String> filelist, bklist, outlist;
 		fs["imagelist-"+currentID]>>filelist;
 		fs["masklist-"+currentID]>>bklist;
 		fs["outlist-"+currentID]>>outlist;

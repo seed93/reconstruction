@@ -15,6 +15,7 @@ CManageData::~CManageData()
 			delete [] imagePyrm[i];
 			delete [] maskPyrm[i];
 		}
+		imagePyrm = NULL;
 	}
 }
 
@@ -36,12 +37,16 @@ bool CManageData::Init(cv::FileStorage fs)
 	m_CampairNum = camID.rows;
 	cam.resize(m_CampairNum);
 
-	vector<string> imagelist, masklist;
+	vector<cv::String> imagelist, masklist;
 	fs["imagelist"]>>imagelist;
 	fs["masklist"]>>masklist;
 	m_CameraNum = (int)imagelist.size();
 	
 	cv::FileStorage f_calib(m_FilePath+camera_calib_name, cv::FileStorage::READ);
+	if (f_calib.isOpened() == false) {
+		printf("cannot open file %s\n", camera_calib_name.c_str());
+		return false;
+	}
 	for (int i=0; i<m_CampairNum; i++)
 	{
 		cam[i].resize(2);
@@ -91,7 +96,7 @@ bool CManageData::SaveMat(cv::Mat input, char * filename)
 	FILE *fp = fopen(filename, "wb");
 	if(fp == NULL)
 	{
-		fprintf(stderr, "Create file %s failed...\n%s", filename);
+		fprintf(stderr, "Create file %s failed...\n", filename);
 		return false;
 	}
 	fwrite(&(input.rows), 4, 1, fp);

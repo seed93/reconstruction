@@ -1,5 +1,5 @@
 ﻿<?xml version="1.0" encoding="utf-8"?>
-<Project DefaultTargets="Build" ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+<Project DefaultTargets="Build" ToolsVersion="14.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <ItemGroup Label="ProjectConfigurations">
     <ProjectConfiguration Include="Debug|x64">
       <Configuration>Debug</Configuration>
@@ -27,12 +27,14 @@
     <ProjectGuid>{4B39FCBD-A7C4-46D2-9D85-E45E7C291AA5}</ProjectGuid>
     <Keyword>Win32Proj</Keyword>
     <RootNamespace>PCL_test</RootNamespace>
+    <TargetPlatformVersion>8.1</TargetPlatformVersion>
   </PropertyGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'" Label="Configuration">
     <ConfigurationType>DynamicLibrary</ConfigurationType>
     <UseDebugLibraries>true</UseDebugLibraries>
     <CharacterSet>Unicode</CharacterSet>
+    <PlatformToolset>v140</PlatformToolset>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'" Label="Configuration">
     <ConfigurationType>DynamicLibrary</ConfigurationType>
@@ -40,6 +42,7 @@
     <WholeProgramOptimization>true</WholeProgramOptimization>
     <CharacterSet>Unicode</CharacterSet>
     <UseOfMfc>false</UseOfMfc>
+    <PlatformToolset>v140</PlatformToolset>
   </PropertyGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.props" />
   <ImportGroup Label="ExtensionSettings">
@@ -65,6 +68,7 @@
     <OutDir>$(SolutionDir)lib\</OutDir>
     <TargetName>$(ProjectName)_$(Configuration)</TargetName>
     <EmbedManifest>true</EmbedManifest>
+    <TargetExt>.dll</TargetExt>
   </PropertyGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
     <ClCompile>
@@ -73,7 +77,7 @@
       <WarningLevel>Level3</WarningLevel>
       <Optimization>Disabled</Optimization>
       <PreprocessorDefinitions>WIN32;_DEBUG;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
-      <AdditionalIncludeDirectories>..\..\PCL\3rdParty\VTK\include\vtk-5.8;..\..\PCL\include\;..\..\PCL\3rdParty\Eigen\include;..\..\PCL\3rdParty\Boost\include;..\..\PCL\3rdParty\FLANN\include;..\include</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>..\..\PCL_1_7_2\include\pcl-1.7;..\..\PCL_1_7_2\3rdParty\Eigen\include;..\..\PCL_1_7_2\3rdParty\Boost\include;..\..\PCL_1_7_2\3rdParty\FLANN\include;..\include</AdditionalIncludeDirectories>
       <MultiProcessorCompilation>true</MultiProcessorCompilation>
       <RuntimeLibrary>MultiThreadedDebug</RuntimeLibrary>
       <OpenMPSupport>true</OpenMPSupport>
@@ -81,7 +85,7 @@
     <Link>
       <SubSystem>Console</SubSystem>
       <GenerateDebugInformation>true</GenerateDebugInformation>
-      <AdditionalLibraryDirectories>../../PCL/3rdParty/Boost/lib;</AdditionalLibraryDirectories>
+      <AdditionalLibraryDirectories>../../PCL_1_7_2/3rdParty/Boost/lib;</AdditionalLibraryDirectories>
       <OutputFile>$(OutDir)../dlls/$(Configuration)/$(TargetName)$(TargetExt)</OutputFile>
       <IgnoreSpecificDefaultLibraries>
       </IgnoreSpecificDefaultLibraries>
@@ -96,22 +100,23 @@
       <FunctionLevelLinking>true</FunctionLevelLinking>
       <IntrinsicFunctions>true</IntrinsicFunctions>
       <PreprocessorDefinitions>WIN32;NDEBUG;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
-      <AdditionalIncludeDirectories>..\..\PCL\3rdParty\VTK\include\vtk-5.8;..\..\PCL\include\;..\..\PCL\3rdParty\Eigen\include;..\..\PCL\3rdParty\Boost\include;..\..\PCL\3rdParty\FLANN\include;..\include</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>..\..\PCL_1_7_2\include\pcl-1.7;..\..\PCL_1_7_2\3rdParty\Eigen\include;..\..\PCL_1_7_2\3rdParty\Boost\include;..\..\PCL_1_7_2\3rdParty\FLANN\include;..\include</AdditionalIncludeDirectories>
       <MultiProcessorCompilation>false</MultiProcessorCompilation>
       <OpenMPSupport>true</OpenMPSupport>
       <RuntimeLibrary>MultiThreaded</RuntimeLibrary>
       <AdditionalOptions>-Zm238 %(AdditionalOptions)</AdditionalOptions>
+      <DebugInformationFormat>OldStyle</DebugInformationFormat>
     </ClCompile>
     <Link>
       <SubSystem>Console</SubSystem>
       <GenerateDebugInformation>true</GenerateDebugInformation>
       <EnableCOMDATFolding>false</EnableCOMDATFolding>
       <OptimizeReferences>false</OptimizeReferences>
-      <AdditionalLibraryDirectories>../../PCL/3rdParty/Boost/lib;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
+      <AdditionalLibraryDirectories>../../PCL_1_7_2/3rdParty/Boost/lib;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
       <AdditionalDependencies>kernel32.lib;user32.lib;gdi32.lib;winspool.lib;comdlg32.lib;advapi32.lib;shell32.lib;ole32.lib;oleaut32.lib;uuid.lib;odbc32.lib;odbccp32.lib;%(AdditionalDependencies)</AdditionalDependencies>
       <ModuleDefinitionFile>
       </ModuleDefinitionFile>
-      <OutputFile>$(OutDir)../dlls/$(Configuration)/$(TargetName)$(TargetExt)</OutputFile>
+      <OutputFile>$(SolutionDir)Demo\$(TargetName)$(TargetExt)</OutputFile>
       <IgnoreSpecificDefaultLibraries>MSVCRT.lib</IgnoreSpecificDefaultLibraries>
       <LargeAddressAware>true</LargeAddressAware>
       <LinkTimeCodeGeneration>UseLinkTimeCodeGeneration</LinkTimeCodeGeneration>

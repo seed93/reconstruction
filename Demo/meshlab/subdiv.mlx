@@ -1,0 +1,9 @@
+<!DOCTYPE FilterScript>
+<FilterScript>
+ <filter name="Subdivision Surfaces: Loop">
+  <Param enum_val1="Enhance regularity" enum_val2="Enhance continuity" type="RichEnum" enum_cardinality="3" description="Weighting scheme" name="LoopWeight" value="2" tooltip="Change the weights used. Allow to optimize some beaviors in despite of others." enum_val0="Loop"/>
+  <Param type="RichInt" description="Iterations" name="Iterations" value="3" tooltip="Number of time the model is subdivided."/>
+  <Param type="RichAbsPerc" min="0" max="392.094" description="Edge Threshold" name="Threshold" value="3.9209" tooltip="All the edges &lt;b>longer&lt;/b> than this threshold will be refined.&lt;br>Setting this value to zero will force an uniform refinement."/>
+  <Param type="RichBool" description="Affect only selected faces" name="Selected" value="false" tooltip="If selected the filter affect only the selected faces"/>
+ </filter>
+</FilterScript>

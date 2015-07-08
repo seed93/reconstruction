@@ -6,12 +6,12 @@
 bool CReconstrction::Init(char *configfile)
 {
 	cv::FileStorage fs(configfile, cv::FileStorage::READ);
-	fs["filepath"]>>filepath;
 	if (fs.isOpened() == false)
 	{
 		printf("cannot open file %s\n", configfile);
 		return false;
 	}
+	fs["filepath"] >> filepath;
 	if (m_ImageData.Init(fs) == false)
 		return false;
 	m_Matching.Init(&m_ImageData, &m_CloudOptimization,2,0.03);//org: 2,0.1
