@@ -98,3 +98,4 @@ Demo/segmentation/main_ljl_5_18.m
 Demo/segmentation/RegionGrowing_mex.mexw64
 Demo/CloudOptimization_Release.dll
 Demo/reconstruction.exe
+lib/CloudOptimization_Release.lib
