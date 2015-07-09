@@ -5,6 +5,9 @@ CloudOptimization/x64/
 Kinect2Cloud/x64/
 BatchProcess/x64/
 lib/opencv/
+Demo/INPUT/
+Demo/tmp/
+Demo/meshlab/
 .svn/
 
 # Compiled Object files
@@ -86,3 +89,9 @@ $RECYCLE.BIN/
 *.msi
 *.msm
 *.msp
+
+Demo/readme.txt
+Demo/segmentation/main_ljl_5_18.m
+Demo/segmentation/RegionGrowing_mex.mexw64
+Demo/CloudOptimization_Release.dll
+Demo/reconstruction.exe
