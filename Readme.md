@@ -1,18 +1,18 @@
 # Reconstruction
 
-Reconstruction��һ�����ڶ��ӽ���ά�ؽ�����Ŀ������Ŀ�ο�[Beeler10](https://graphics.ethz.ch/publications/papers/paperBee10.php)�Ĺ�����ɣ�ʹ��10̨����D1200�����6յ�����ͬ���ɼ����������㷨����õ�������άģ�͡���Ŀ��VS2010��VS2015�����汾��
+Reconstruction是一个用于多视角三维重建的项目，该项目参考[Beeler10](https://graphics.ethz.ch/publications/papers/paperBee10.php)的工作完成，使用10台佳能D1200相机、6盏闪光灯同步采集，最终由算法计算得到人脸三维模型。项目有VS2010和VS2015两个版本。
 
-# ��Ŀ����
+# 项目依赖
 
-- [PCL](http://pointclouds.org/) ��̬�⡣���ڿ��ļ������Ӵ�δ��������Ŀ�У���Ҫ�������ر����ѱ���õ�[��̬��](http://pan.baidu.com/s/1bnyfvLt)���о���棨����������Ŀ���裩�������棬��ѹ����Ŀͬһ��Ŀ¼��VS2010ʹ��1.6.0�汾��VS2015ʹ��1.7.2�汾�����û����б��룬�ɲο�����[����](http://ld99.top/2015/07/07/%E9%A1%B9%E7%9B%AE%E4%BB%8EVS2010%E8%BF%81%E7%A7%BB%E5%88%B0VS2015/#%E9%9D%99%E6%80%81%E7%BC%96%E8%AF%91_PCL)��
-- OpenCV��̬�⣬�Ѱ�������Ŀ�У�����`lib\`Ŀ¼�½�ѹ**opencv.7z**
-- [Armadillo](http://arma.sourceforge.net/)���Ѱ�������Ŀ��
-- [MeshLab](http://meshlab.sourceforge.net/)�����û��������غ��ѹ��`Demo\meshlab\`Ŀ¼��
+- [PCL](http://pointclouds.org/) 静态库。由于库文件过于庞大，未包含在项目中，需要额外下载本人已编译好的[静态库](http://pan.baidu.com/s/1bnyfvLt)，有精简版（仅包含该项目所需）和完整版，解压至项目同一级目录，VS2010使用1.6.0版本，VS2015使用1.7.2版本。请用户自行编译。
+- OpenCV静态库，已包含在项目中，请在`lib\`目录下解压**opencv.7z**
+- [Armadillo](http://arma.sourceforge.net/)，已包含在项目中
+- [MeshLab](http://meshlab.sourceforge.net/)，请用户自行下载后解压到`Demo\meshlab\`目录下
 
-ע�����ڿ��ļ����̫�󣬲�δ�ϴ�debug�棬������Ҫ�뵥����ȡ��
+注：由于库文件体积太大，并未上传debug版，如有需要请单独索取。
 
-# ��Ŀ���
+# 项目框架
 
-��Ŀ��Ϊ4��ģ�飬����Ϊreconstruction��������ؽ���������CloudOptimization���������漰PCL���������ӿ⣬����������ĿΪ����ʹ�á�
+项目分为4个模块，核心为reconstruction，完成了重建的主程序，CloudOptimization用于生成涉及PCL函数的链接库，其他两个项目为个人使用。
 
-Demo�ļ����·����ѱ���õĿ�ִ���ļ���demo��Դ����ֱ������`reconstruction.exe INPUT\myself\config_myself.yml`��`reconstruction.exe INPUT\ETH\config_ETH.yml`������ply�ļ���MeshLab�򿪡�Demo��Ҫ����ѹMeshLab��`Demo\meshlab\`Ŀ¼�¡�
+Demo文件夹下放有已编译好的可执行文件和demo资源，可直接运行`reconstruction.exe INPUT\myself\config_myself.yml`或`reconstruction.exe INPUT\ETH\config_ETH.yml`，生成ply文件用MeshLab打开。Demo需要将解压MeshLab到`Demo\meshlab\`目录下。
